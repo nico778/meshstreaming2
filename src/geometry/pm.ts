@@ -73,11 +73,11 @@ export class PMesh {
     this.edges = new Array(edges.length);
     this.halfedges = new Array(edges.length * 2);
 
-    const idx2vert = new Map();
-    for (let i = 0; i < positions.length; i++) {
+    let idvert = new Map();
+    for(let i = 0; i < positions.length; i++) {
       const v = new Vertex(positions[i]);
       this.verts[i] = v;
-      idx2vert.set(i, v);
+      idvert.set(i, v);
     }
 
     let eidx = 0;
@@ -109,7 +109,7 @@ export class PMesh {
         he.onBoundary = false;
         hasTwin.set(he, false);
 
-        const v = idx2vert.get(a);
+        let v = idvert.get(a);
         he.vert = v;
         v.halfedge = he;
 
@@ -143,8 +143,6 @@ export class PMesh {
 
           existedHe.set(ek, he);
         }
-
-        // FIXME: non-manifold edge count checking
       }
     }
 
