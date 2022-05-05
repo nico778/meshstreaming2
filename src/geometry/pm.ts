@@ -56,28 +56,14 @@ export class PMesh {
 
   buildPM(indices: number[], positions: Vector[]) {
     this.verts = new Array(positions.length);
+    this.edges = new Array(positions.length + indices.length/3);
     this.faces = new Array(indices.length / 3);
-    
-    let edges: string[] = [];
-    for(let i=0; i < indices.length; i+=3) {
-      for(let j=0; j < 3; j++) {
-        let a = indices[i + j];
-        let b = indices[i + ((j + 1) % 3)];
-        let edge = `${a}-${b}`;
-        if(!edges.includes(`${a}-${b}`) || !edges.includes(`${b}-${a}`)) {
-          edges.push(edge);
-        }
-      }
-    }
+    this.halfedges = new Array((positions.length + indices.length/3) * 2);
 
-    this.edges = new Array(edges.length);
-    this.halfedges = new Array(edges.length * 2);
-
-    let idvert = new Map();
-    for(let i = 0; i < positions.length; i++) {
+    //create vertices
+    for (let i = 0; i < positions.length; i++) {
       const v = new Vertex(positions[i]);
       this.verts[i] = v;
-      idvert.set(i, v);
     }
 
     let eidx = 0;
@@ -109,7 +95,8 @@ export class PMesh {
         he.onBoundary = false;
         hasTwin.set(he, false);
 
-        let v = idvert.get(a);
+        //const v = idx2vert.get(a);
+        const v = this.verts[a];
         he.vert = v;
         v.halfedge = he;
 
@@ -143,6 +130,8 @@ export class PMesh {
 
           existedHe.set(ek, he);
         }
+
+        // FIXME: non-manifold edge count checking
       }
     }
 
@@ -214,6 +203,11 @@ export class PMesh {
     this.halfedges.forEach(h => {
       h.idx = index++;
     });
+
+    console.log(this.verts.length)
+    console.log(this.faces.length)
+    console.log(this.halfedges.length)
+    console.log(this.edges.length)
   }
 
   //apply vsplit
