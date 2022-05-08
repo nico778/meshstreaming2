@@ -1,5 +1,10 @@
 import {Vector} from './vector';
-import {Vertex, Halfedge, Edge, Wedge, Face, Vsplit} from './elements';
+import {Vertex} from "./vertex";
+import {Halfedge} from "./halfedge";
+import {Edge} from "./edge";
+import {Wedge} from "./wedge";
+import {Face} from "./face";
+import {Vsplit} from './vsplit';
 
 export class PMesh {
   verts: Vertex[];
