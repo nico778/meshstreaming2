@@ -294,7 +294,6 @@ export class PMesh {
   pmIteratorNextAncestor() {
   }
 
-
   geomorph(vertsGoal: number, facesGoal: number, pmIter: PMesh, 
     Type: String, int: Number) {
   }

@@ -17,4 +17,11 @@ export class Halfedge {
       this.idx = -1;
       this.onBoundary = false;
     }
+
+    vector(): Vector {
+      let a = this.vert?.position;
+      let b = this.twin?.vert?.position;
+      let ev = b!.sub(a!);
+      return ev!;
+    }
 }
