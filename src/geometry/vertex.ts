@@ -16,7 +16,11 @@ export class Vertex {
   constructor(position: Vector) {
     this.position = position;
     this.idx = -1;
-    this.ecolProspect = null;
+    this.ecolError = -1;
+    this.minError = -1;
+    this.totalError = -1;
+    this.errorCount = -1;
+    //this.ecolProspect = null;
   }
 
   delta() {
@@ -76,34 +80,21 @@ export class Vertex {
   h_ecolError(h: Halfedge) {
     //error of collapsing halfedge this---h.next.vert
     //two faces on either side of the halfedge
-    let adjFaces = [];
     let heLen = h.vector().norm();
-    let change = 0;
-
-    this.faces(f => {
-      h.next.vert.faces(f2 => {
-        if(f == f2) {
-          adjFaces.push(f);
-        }
-      });
-    }); 
+    let change = 0; 
     
     //face furthest away from adjFaces
-    h.next.vert.faces(f => {
+    this.faces(f => {
       let minChange = 1;
 
-      adjFaces.forEach(adjF => {
-        minChange = Math.min(minChange, (1 - (f.normal().dot(adjF.normal()))) / 2);
+      h.next!.vert!.faces(f2 => {
+        if(f == f2) {
+          minChange = Math.min(minChange, (1 - (f.normal().dot(f.normal()))) / 2);
+        }
       });
 
       change = Math.max(change, minChange);
     });
-
-    //boundary case
-    //todo: different errors for boundary
-    if(adjFaces.length < 2) {
-      change = 1;
-    }
 
     return heLen * change;
   }

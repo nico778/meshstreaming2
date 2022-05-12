@@ -255,6 +255,10 @@ export class PMesh {
 			}
 		}
 
+		this.verts.forEach(v => {
+			v.ecol_Error();
+		});
+
     //update correct indices
     let index = 0;
     this.verts.forEach(v => {
@@ -301,6 +305,10 @@ export class PMesh {
   //takes parameter 0 <= alpha <= 1
   geo_evaluate(alpha: number) {
   }
+
+	pm_simplify() {
+
+	}
 
 	lowest_ecolError() {
 		let lowest = this.verts[0];
