@@ -301,4 +301,16 @@ export class PMesh {
   //takes parameter 0 <= alpha <= 1
   geo_evaluate(alpha: number) {
   }
+
+	lowest_ecolError() {
+		let lowest = this.verts[0];
+
+		this.verts.forEach(v => {
+			if(v.ecolError < lowest.ecolError) {
+				lowest = v;
+			}
+		});
+
+		return lowest;
+	}
 }
