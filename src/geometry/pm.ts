@@ -311,37 +311,95 @@ export class PMesh {
 
 		while(goal) {
 			nextVert = this.lowest_ecolError();
-			this.ecol(nextVert, nextVert.halfedge.next.vert);
+			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 			goal--;
 		}
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
 		//get area on mesh for later update
-		let area = [];
+		let area: Vertex[] = [];
 		vt.halfedges(h => {
-			area.push(h.next.vert);
+			area.push(h.next!.vert!);
 		});
 
 		//delete the 2 collapsed faces on edge uv
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f == f2) {
-					deleteFace(f);
+					this.deleteFace(f.idx);
 				}
 			});
 		});
 
-		//move vertex vt to vs and fix broken halfedge connectivity
-		vt.faces(f => {
-			f.moveVert(vt, vs);
+		//delete halfedges of collapsed faces
+		vt.halfedges(h => {
+			if(h.next!.vert! == vs) {
+				this.deleteHalfedge(h.next!.idx);
+				this.deleteHalfedge(h.prev!.idx);
+				this.deleteHalfedge(h.idx);
+			}
+		});
+		vs.halfedges(h => {
+			if(h.next!.vert! == vt) {
+				this.deleteHalfedge(h.next!.idx);
+				this.deleteHalfedge(h.prev!.idx);
+				this.deleteHalfedge(h.idx);
+			}
 		});
 
-		deleteVert(vt); 
+		//update remaining halfedges
+		vt.halfedges(h => {
+			h.vert = vs;
+		});
+
+		this.deleteVertex(vt.idx);
+
+		//update correct indices
+    let index = 0;
+    this.verts.forEach(v => {
+      v.idx = index++;
+    });
+    index = 0;
+    this.faces.forEach(f => {
+      f.idx = index++;
+    });
+    index = 0;
+    this.halfedges.forEach(h => {
+      h.idx = index++;
+    });
+		index = 0;
+    this.edges.forEach(e => {
+      e.idx = index++;
+    });
 		
 		//ecol error update in affected area
 		area.forEach(v => {
 			v.ecol_Error();
+		});
+	}
+
+	deleteFace(idx: number) {
+		this.faces.forEach(f => {
+			if(idx === f.idx) {
+				this.faces.splice(idx, 1);
+			}
+		});
+	}
+
+	deleteVertex(idx: number) {
+		this.verts.forEach(v => {
+			if(idx === v.idx) {
+				this.verts.splice(idx, 1);
+			}
+		});
+	}
+
+	deleteHalfedge(idx: number) {
+		this.halfedges.forEach(h => {
+			if(idx === h.idx) {
+				this.halfedges.splice(idx, 1);
+			}
 		});
 	}
 

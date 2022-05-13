@@ -10,7 +10,7 @@ export class Halfedge {
     prev?: Halfedge;
     next?: Halfedge;
     twin?: Halfedge;
-    idx: Number;
+    idx: number;
     onBoundary: boolean;
   
     constructor() {
