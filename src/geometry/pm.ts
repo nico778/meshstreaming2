@@ -306,11 +306,46 @@ export class PMesh {
   geo_evaluate(alpha: number) {
   }
 
-	pm_simplify() {
+	pm_simplify(goal: number) {
+		let nextVert: Vertex;
 
+		while(goal) {
+			nextVert = this.lowest_ecolError();
+			this.ecol(nextVert, nextVert.halfedge.next.vert);
+			goal--;
+		}
 	}
 
-	lowest_ecolError() {
+	ecol(vt: Vertex, vs: Vertex) {
+		//get area on mesh for later update
+		let area = [];
+		vt.halfedges(h => {
+			area.push(h.next.vert);
+		});
+
+		//delete the 2 collapsed faces on edge uv
+		vt.faces(f => {
+			vs.faces(f2 => {
+				if(f == f2) {
+					deleteFace(f);
+				}
+			});
+		});
+
+		//move vertex vt to vs and fix broken halfedge connectivity
+		vt.faces(f => {
+			f.moveVert(vt, vs);
+		});
+
+		deleteVert(vt); 
+		
+		//ecol error update in affected area
+		area.forEach(v => {
+			v.ecol_Error();
+		});
+	}
+
+	lowest_ecolError(): Vertex {
 		let lowest = this.verts[0];
 
 		this.verts.forEach(v => {
