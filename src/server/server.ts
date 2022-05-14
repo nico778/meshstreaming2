@@ -3,6 +3,7 @@ import path from 'path'
 import http from 'http'
 import { Server, Socket } from 'socket.io'
 import * as fs from 'fs';
+import {PMesh} from '../geometry/pm';
 
 const port: number = 3000
 
@@ -32,7 +33,7 @@ class App {
             this.clients[socket.id] = {}
             console.log(this.clients)
             console.log('a user connected : ' + socket.id)
-            socket.emit('id', socket.id)
+            //socket.emit('id', socket.id)
 
             socket.on('request mesh', (msg: any) => {
                 var path = './dist/models/'+msg+'.obj';
@@ -41,14 +42,25 @@ class App {
                     console.error(err);
                     return;
                   }
-                  socket.emit('stream mesh data', data);
+                  //socket.emit('stream mesh data', data);
                   //parseFile(data);
-                  //socket.emit('stream vertices', vertices);
-                  //socket.emit('stream indices', indices);
+                  let pmesh = new PMesh(data);
+                  pmesh.verts.forEach(v => {
+                      vertices.push(v.position.x);
+                      vertices.push(v.position.y);
+                      vertices.push(v.position.z);
+                  });
+                  pmesh.faces.forEach(f => {
+                      indices.push(f.halfedge!.vert!.idx);
+                      indices.push(f.halfedge!.next!.vert!.idx);
+                      indices.push(f.halfedge!.next!.next!.vert!.idx);
+                  });
+                  socket.emit('stream vertices', vertices);
+                  socket.emit('stream indices', indices);
                 });
             });
             
-
+/*
             socket.on('disconnect', () => {
                 console.log('socket disconnected : ' + socket.id)
                 if (this.clients && this.clients[socket.id]) {
@@ -64,12 +76,12 @@ class App {
                     this.clients[socket.id].p = message.p //position
                     this.clients[socket.id].r = message.r //rotation
                 }
-            })
+            })*/
         })
-
+/*
         setInterval(() => {
             this.io.emit('clients', this.clients)
-        }, 50)
+        }, 50)*/
     }
 
     public Start() {
@@ -78,7 +90,7 @@ class App {
         })
     }
 }
-/*
+
 function parseFile(file: String) {
     //adapted from geometry processing homework skeleton 
     const lines = file.split('\n');
@@ -102,6 +114,6 @@ function parseFile(file: String) {
           break;
       }
     }
-}*/
+}
 
 new App(port).Start()

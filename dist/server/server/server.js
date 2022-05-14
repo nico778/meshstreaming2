@@ -31,6 +31,7 @@ const path_1 = __importDefault(require("path"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const fs = __importStar(require("fs"));
+const pm_1 = require("../geometry/pm");
 const port = 3000;
 let vertices;
 let indices;
@@ -58,7 +59,18 @@ class App {
                         return;
                     }
                     //socket.emit('stream mesh data', data);
-                    parseFile(data);
+                    //parseFile(data);
+                    let pmesh = new pm_1.PMesh(data);
+                    pmesh.verts.forEach(v => {
+                        vertices.push(v.position.x);
+                        vertices.push(v.position.y);
+                        vertices.push(v.position.z);
+                    });
+                    pmesh.faces.forEach(f => {
+                        indices.push(f.halfedge.vert.idx);
+                        indices.push(f.halfedge.next.vert.idx);
+                        indices.push(f.halfedge.next.next.vert.idx);
+                    });
                     socket.emit('stream vertices', vertices);
                     socket.emit('stream indices', indices);
                 });

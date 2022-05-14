@@ -2,9 +2,9 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
-import {PMesh} from '../geometry/pm';
+//import {PMesh} from '../geometry/pm';
 
-let data: string = '';
+//let data: string = '';
 var vertices: number[];
 var indices: number[];
 indices = [];
@@ -32,8 +32,8 @@ function onWindowResize() {
     render()
 }
 
-function buildMesh(data: string) {
-    const pmesh = new PMesh(data);
+function buildMesh() {
+    /*const pmesh = new PMesh(data);
     pmesh.verts.forEach(v => {
         vertices.push(v.position.x);
         vertices.push(v.position.y);
@@ -43,16 +43,13 @@ function buildMesh(data: string) {
         indices.push(f.halfedge!.vert!.idx);
         indices.push(f.halfedge!.next!.vert!.idx);
         indices.push(f.halfedge!.next!.next!.vert!.idx);
-    });
+    });*/
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
     const mesh = new THREE.Mesh(geometry);
     scene.add(mesh);
     animate();
 }
-
-let myId = ''
-let timestamp = 0
 
 const socket = io()
 socket.on('connect', function () {
@@ -61,11 +58,11 @@ socket.on('connect', function () {
 socket.on('disconnect', function (message: any) {
     console.log('disconnect ' + message)
 })
-socket.on('stream mesh data', (mesh_data: string) => {
+/*socket.on('stream mesh data', (mesh_data: string) => {
     data = mesh_data;
     buildMesh(data);
-});
-/*
+});*/
+
 socket.on('stream vertices', (verts:number[]) => {
     verts.forEach( v => {
         vertices.push(v);
@@ -76,17 +73,17 @@ socket.on('stream indices', (inds:number[]) => {
         indices.push(i);
     });
     buildMesh();
-});*/
+});
 
 function startStreaming() {
     var mesh = params.type;
     console.log(mesh);
     socket.emit('request mesh', mesh);
 }
-
+/*
 socket.on('removeClient', (id: string) => {
     scene.remove(scene.getObjectByName(id) as THREE.Object3D)
-})
+})*/
 
 const gui = new GUI()
 
@@ -98,7 +95,7 @@ const modelsFolder = gui.addFolder('Select Model');
 //add button to start mesh streaming
 var params = { 
     stream: () => startStreaming(),
-    type: 'bunny'
+    type: 'monkey'
 };
 
 gui
@@ -108,9 +105,9 @@ gui
 
 gui
     .add(params, 'type', [
+        'monkey',
         'bunny',
-        'hamster',
-        'frog',
+        'bunny-simple',
     ])
     .name('select model')
     .listen();
