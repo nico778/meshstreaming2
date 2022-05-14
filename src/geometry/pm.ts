@@ -310,6 +310,7 @@ export class PMesh {
 		let nextVert: Vertex;
 
 		while(goal) {
+			console.log(goal);
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 			goal--;

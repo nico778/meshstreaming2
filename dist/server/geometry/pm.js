@@ -271,6 +271,7 @@ class PMesh {
     pm_simplify(goal) {
         let nextVert;
         while (goal) {
+            console.log(goal);
             nextVert = this.lowest_ecolError();
             this.ecol(nextVert, nextVert.halfedge.next.vert);
             goal--;

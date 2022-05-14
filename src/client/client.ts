@@ -75,11 +75,24 @@ socket.on('stream indices', (inds:number[]) => {
     buildMesh();
 });
 
+socket.on('update vertices', (vertices) => {
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
+    console.log('done');
+});
+socket.on('update indices', (indices) => {
+    geometry.setIndex(indices);
+});
+
 function startStreaming() {
     var mesh = params.type;
     console.log(mesh);
     socket.emit('request mesh', mesh);
 }
+
+function startCollapsing() {
+    socket.emit('request simplify', 100);
+}
+
 /*
 socket.on('removeClient', (id: string) => {
     scene.remove(scene.getObjectByName(id) as THREE.Object3D)
@@ -95,12 +108,18 @@ const modelsFolder = gui.addFolder('Select Model');
 //add button to start mesh streaming
 var params = { 
     stream: () => startStreaming(),
+    simplify: () => startCollapsing(),
     type: 'monkey'
 };
 
 gui
     .add(params,'stream')
     .name('stream mesh from server')
+    .listen();
+
+gui
+    .add(params,'simplify')
+    .name('simplify mesh')
     .listen();
 
 gui

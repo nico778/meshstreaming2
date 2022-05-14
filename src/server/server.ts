@@ -11,6 +11,7 @@ let vertices: number[];
 let indices: number[];
 vertices = [];
 indices = [];
+let pmesh: PMesh;
 
 class App {
     private server: http.Server
@@ -44,7 +45,7 @@ class App {
                   }
                   //socket.emit('stream mesh data', data);
                   //parseFile(data);
-                  let pmesh = new PMesh(data);
+                  pmesh = new PMesh(data);
                   pmesh.verts.forEach(v => {
                       vertices.push(v.position.x);
                       vertices.push(v.position.y);
@@ -58,6 +59,22 @@ class App {
                   socket.emit('stream vertices', vertices);
                   socket.emit('stream indices', indices);
                 });
+            });
+
+            socket.on('request simplify', (goal: number) => {
+                pmesh.pm_simplify(goal);
+                pmesh.verts.forEach(v => {
+                    vertices.push(v.position.x);
+                    vertices.push(v.position.y);
+                    vertices.push(v.position.z);
+                });
+                pmesh.faces.forEach(f => {
+                    indices.push(f.halfedge!.vert!.idx);
+                    indices.push(f.halfedge!.next!.vert!.idx);
+                    indices.push(f.halfedge!.next!.next!.vert!.idx);
+                });
+                socket.emit('update vertices', vertices);
+                socket.emit('update indices', indices);
             });
             
 /*
