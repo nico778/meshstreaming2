@@ -37,7 +37,7 @@ class App {
             //socket.emit('id', socket.id)
 
             socket.on('request mesh', (msg: any) => {
-                var path = './dist/models/'+msg+'.obj';
+                var path = './src/models/'+msg+'.obj';
                 fs.readFile(path, 'utf-8', (err: any, data: String) => {
                   if(err) {
                     console.error(err);
