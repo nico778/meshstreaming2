@@ -80,10 +80,10 @@ export class Vertex {
   h_ecolError(h: Halfedge) {
     //error of collapsing halfedge this---h.next.vert
     //two faces on either side of the halfedge
+    //select face with biggest distance from those two faces
     let heLen = h.vector().norm();
     let change = 0; 
     
-    //face furthest away from adjFaces
     this.faces(f => {
       let minChange = 1;
 
