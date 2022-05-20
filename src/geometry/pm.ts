@@ -244,7 +244,7 @@ export class PMesh {
 					addition = nextTwinless!;
 					counter++;
 				};
-				console.log(counter);
+				//console.log(counter);
 				//link all existing boundary halfedges in correct order
 				for(let j = 0; j < counter; j++) {
 					boundaryRound[j].prev = boundaryRound[(j + 1) % counter];
@@ -309,12 +309,17 @@ export class PMesh {
 	pm_simplify(goal: number) {
 		let nextVert: Vertex;
 
-		while(goal) {
-			console.log(goal);
+		while(this.verts.length > 200) {
+			//console.log(goal);
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 			goal--;
 		}
+
+		console.log(this.verts.length);
+    console.log(this.faces.length);
+    console.log(this.halfedges.length);
+    console.log(this.edges.length);
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {

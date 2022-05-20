@@ -35,8 +35,8 @@ class App {
             console.log(this.clients);
             console.log('a user connected : ' + socket.id);
 
-            socket.on('request mesh', (msg: any) => {
-                var path = './src/models/'+msg+'.obj';
+            //socket.on('request mesh', (msg: any) => {
+                var path = './src/models/monkey.obj';
                 fs.readFile(path, 'utf-8', (err: any, data: String) => {
                   if(err) {
                     console.error(err);
@@ -56,10 +56,37 @@ class App {
                   socket.emit('stream vertices', vertices);
                   socket.emit('stream indices', indices);
                 });
+            //});
+
+            socket.on('request mesh', (msg: any) => {
+                var path = './src/models/'+msg+'.obj';
+                fs.readFile(path, 'utf-8', (err: any, data: String) => {
+                  if(err) {
+                    console.error(err);
+                    return;
+                  }
+                  vertices = [];
+                  indices = [];
+
+                  pmesh = new PMesh(data);
+                  pmesh.verts.forEach(v => {
+                      vertices.push(v.position.x);
+                      vertices.push(v.position.y);
+                      vertices.push(v.position.z);
+                  });
+                  pmesh.faces.forEach(f => {
+                      indices.push(f.halfedge!.vert!.idx);
+                      indices.push(f.halfedge!.next!.vert!.idx);
+                      indices.push(f.halfedge!.next!.next!.vert!.idx);
+                  });
+                  socket.emit('stream vertices', vertices);
+                  socket.emit('stream indices', indices);
+                });
             });
 
             socket.on('request simplify', (goal: number) => {
                 pmesh.pm_simplify(goal);
+
                 pmesh.verts.forEach(v => {
                     vertices.push(v.position.x);
                     vertices.push(v.position.y);

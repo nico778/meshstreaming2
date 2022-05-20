@@ -9,6 +9,7 @@ indices = [];
 vertices = [];
 
 const scene = new THREE.Scene();
+let mesh: THREE.Mesh;
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 4;
 const renderer = new THREE.WebGLRenderer();
@@ -18,7 +19,6 @@ const controls = new OrbitControls(camera, renderer.domElement);
 const gridHelper = new THREE.GridHelper(10, 10);
 gridHelper.position.y = -0.5;
 scene.add(gridHelper);
-
 let geometry = new THREE.BufferGeometry();
 
 
@@ -33,7 +33,8 @@ function onWindowResize() {
 function buildMesh() {
     geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
-    const mesh = new THREE.Mesh(geometry);
+    const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+    mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
     animate();
 }
@@ -60,20 +61,24 @@ socket.on('stream indices', (inds:number[]) => {
 
 socket.on('update vertices', (vertices) => {
     geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
-    console.log('done');
 });
 socket.on('update indices', (indices) => {
     geometry.setIndex(indices);
 });
 
 function startStreaming() {
-    var mesh = params.type;
-    console.log(mesh);
-    socket.emit('request mesh', mesh);
+    var type = params.type;
+    console.log(type);
+    if (mesh !== null) {
+        scene.remove(mesh);
+        vertices = [];
+        indices = [];
+      }
+    socket.emit('request mesh', type);
 }
 
 function startCollapsing() {
-    socket.emit('request simplify', 100);
+    socket.emit('request simplify', 1);
 }
 
 
@@ -87,7 +92,7 @@ const modelsFolder = gui.addFolder('Select Model');
 var params = { 
     stream: () => startStreaming(),
     simplify: () => startCollapsing(),
-    type: 'monkey'
+    type: ['cube', 'gourd', 'monkey', 'bunny', 'bunny-simple']
 };
 
 gui
@@ -102,6 +107,8 @@ gui
 
 gui
     .add(params, 'type', [
+        'cube',
+        'gourd',
         'monkey',
         'bunny',
         'bunny-simple',
