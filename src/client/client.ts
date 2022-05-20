@@ -31,8 +31,8 @@ function onWindowResize() {
 }
 
 function buildMesh() {
-    geometry.setIndex(indices);
     geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
+    geometry.setIndex(indices);
     const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
     mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
@@ -58,9 +58,9 @@ socket.on('stream indices', (inds:number[]) => {
     });
     buildMesh();
 });
-
+ 
 socket.on('update vertices', (vertices) => {
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('update indices', (indices) => {
     geometry.setIndex(indices);
@@ -78,7 +78,7 @@ function startStreaming() {
 }
 
 function startCollapsing() {
-    socket.emit('request simplify', 1);
+    socket.emit('request simplify');
 }
 
 
@@ -92,7 +92,7 @@ const modelsFolder = gui.addFolder('Select Model');
 var params = { 
     stream: () => startStreaming(),
     simplify: () => startCollapsing(),
-    type: ['cube', 'gourd', 'monkey', 'bunny', 'bunny-simple']
+    type: ['isocahedron', 'gourd', 'monkey']
 };
 
 gui
@@ -107,11 +107,9 @@ gui
 
 gui
     .add(params, 'type', [
-        'cube',
+        'isocahedron',
         'gourd',
-        'monkey',
-        'bunny',
-        'bunny-simple',
+        'monkey'
     ])
     .name('select model')
     .listen();

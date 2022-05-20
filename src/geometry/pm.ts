@@ -306,14 +306,12 @@ export class PMesh {
   geo_evaluate(alpha: number) {
   }
 
-	pm_simplify(goal: number) {
+	pm_simplify() {
 		let nextVert: Vertex;
 
-		while(this.verts.length > 200) {
-			//console.log(goal);
+		while(this.faces.length > 11) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
-			goal--;
 		}
 
 		console.log(this.verts.length);

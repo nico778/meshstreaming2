@@ -84,8 +84,8 @@ class App {
                 });
             });
 
-            socket.on('request simplify', (goal: number) => {
-                pmesh.pm_simplify(goal);
+            socket.on('request simplify', () => {
+                pmesh.pm_simplify();
 
                 pmesh.verts.forEach(v => {
                     vertices.push(v.position.x);
