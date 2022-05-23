@@ -320,6 +320,39 @@ export class PMesh {
 		this.basePositions = new Array(this.verts.length);
 		this.baseIndices = new Array(this.faces.length*3);
 
+		this.verts.forEach(v => {
+			let addvert = 'v '+v.position.x+' '+v.position.y+' '+v.position.z+' \n';
+			fs.appendFile('base-mesh.txt', addvert, err => {
+				if(err) {
+					console.error(err);
+					return;
+				}
+			});
+		});
+
+		this.faces.forEach(f => {
+			let vidx0 = f.halfedge.vert.idx + 1;
+			let vidx1 = f.halfedge.next.vert.idx + 1;
+			let vidx2 = f.halfedge.prev.vert.idx + 1;
+
+			let addface = 'f '+vidx0+' '+vidx1+' '+vidx2+' \n';
+			fs.appendFile('base-mesh.txt', addface, err => {
+				if(err) {
+					console.error(err);
+					return;
+				}
+			});
+		});
+
+		
+		const insert0 = '\n' + fs.readFileSync('pm-test.txt')
+		fs.appendFile('base-mesh.txt', insert0, err => {
+			if(err) {
+				console.error(err);
+				return;
+			}
+		});
+
 		console.log(this.verts.length);
     console.log(this.faces.length);
     console.log(this.halfedges.length);
@@ -333,25 +366,31 @@ export class PMesh {
 			area.push(h.next!.vert!);
 		});
 
+		let empty = true;
+
 		//delete the 2 collapsed faces on edge uv
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f == f2) {
 					this.deleteFace(f.idx);
 
-					let append: string = '';
-					let empty = true;
 					let vidx0 = f.halfedge.vert.idx + 1;
 					let vidx1 = f.halfedge.next.vert.idx + 1;
 					let vidx2 = f.halfedge.prev.vert.idx + 1;
 
-					console.log(vidx0);
-
 					const data = fs.readFileSync('pm-test.txt')
 					const fd = fs.openSync('pm-test.txt', 'w+')
-					const insert = Buffer.from('f '+vidx0+' '+vidx1+' '+vidx2+' \n')
-					fs.writeSync(fd, insert, 0, insert.length, 0)
-					fs.writeSync(fd, data, 0, data.length, insert.length)
+					const insert0 = Buffer.from('f '+vidx0+' '+vidx1+' '+vidx2+' \n')
+					const insert1 = Buffer.from('v '+vt.idx+'\n' + 'f '+vidx0+' '+vidx1+' '+vidx2+' \n')
+					console.log(insert0)
+					if(empty) {
+						fs.writeSync(fd, insert0, 0, insert0.length, 0)
+						fs.writeSync(fd, data, 0, data.length, insert0.length)
+						empty = false;
+					} else {
+						fs.writeSync(fd, insert1, 0, insert1.length, 0)
+						fs.writeSync(fd, data, 0, data.length, insert1.length)
+					}
 					fs.close(fd, (err) => {
 						if (err) throw err;
 					});
