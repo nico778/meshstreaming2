@@ -5,6 +5,7 @@ import {Edge} from "./edge";
 import {Wedge} from "./wedge";
 import {Face} from "./face";
 import {Vsplit} from './vsplit';
+import * as fs from 'fs';
 
 export class PMesh {
   verts: Vertex[];
@@ -12,7 +13,9 @@ export class PMesh {
   faces: Face[];
   halfedges: Halfedge[];
   
-	boundary: Face[]
+	boundary: Face[];
+	basePositions: number[];
+	baseIndices: number[];
   vsplits: Vsplit[];
   full_nvertices: number; //number of vertices in Mn
   full_nwedges: number; //number of wedges in Mn
@@ -309,10 +312,13 @@ export class PMesh {
 	pm_simplify() {
 		let nextVert: Vertex;
 
-		while(this.faces.length > 11) {
+		while(this.faces.length > 15) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 		}
+
+		this.basePositions = new Array(this.verts.length);
+		this.baseIndices = new Array(this.faces.length*3);
 
 		console.log(this.verts.length);
     console.log(this.faces.length);
@@ -332,6 +338,23 @@ export class PMesh {
 			vs.faces(f2 => {
 				if(f == f2) {
 					this.deleteFace(f.idx);
+
+					let append: string = '';
+					let empty = true;
+					let vidx0 = f.halfedge.vert.idx + 1;
+					let vidx1 = f.halfedge.next.vert.idx + 1;
+					let vidx2 = f.halfedge.prev.vert.idx + 1;
+
+					console.log(vidx0);
+
+					const data = fs.readFileSync('pm-test.txt')
+					const fd = fs.openSync('pm-test.txt', 'w+')
+					const insert = Buffer.from('f '+vidx0+' '+vidx1+' '+vidx2+' \n')
+					fs.writeSync(fd, insert, 0, insert.length, 0)
+					fs.writeSync(fd, data, 0, data.length, insert.length)
+					fs.close(fd, (err) => {
+						if (err) throw err;
+					});
 				}
 			});
 		});

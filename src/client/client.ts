@@ -60,15 +60,18 @@ socket.on('stream indices', (inds:number[]) => {
 });
  
 socket.on('update vertices', (vertices) => {
+    //geometry.attributes.position.needsUpdate = true;
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    //console.log(vertices)
 });
 socket.on('update indices', (indices) => {
     geometry.setIndex(indices);
+    //console.log(indices)
 });
 
 function startStreaming() {
     var type = params.type;
-    console.log(type);
+    //console.log(type);
     if (mesh !== null) {
         scene.remove(mesh);
         vertices = [];
@@ -92,7 +95,7 @@ const modelsFolder = gui.addFolder('Select Model');
 var params = { 
     stream: () => startStreaming(),
     simplify: () => startCollapsing(),
-    type: ['isocahedron', 'gourd', 'monkey']
+    type: ['9', '10', '11', 'isocahedron', 'gourd', 'monkey']
 };
 
 gui
@@ -107,6 +110,9 @@ gui
 
 gui
     .add(params, 'type', [
+        '9',
+        '10',
+        '11',
         'isocahedron',
         'gourd',
         'monkey'
@@ -121,7 +127,6 @@ const animate = function () {
 }
 
 const render = function () {
-    // geometry.attributes.position.needsUpdate = true;
     renderer.render(scene, camera);
 }
 
