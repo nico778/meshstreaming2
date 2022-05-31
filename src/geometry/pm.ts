@@ -312,7 +312,7 @@ export class PMesh {
 	pm_simplify() {
 		let nextVert: Vertex;
 
-		while(this.faces.length > 15) {
+		while(this.faces.length >= 12) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 		}
@@ -322,7 +322,7 @@ export class PMesh {
 
 		this.verts.forEach(v => {
 			let addvert = 'v '+v.position.x+' '+v.position.y+' '+v.position.z+' \n';
-			fs.appendFile('base-mesh.txt', addvert, err => {
+			fs.appendFile('base-mesh2.txt', addvert, err => {
 				if(err) {
 					console.error(err);
 					return;
@@ -336,7 +336,7 @@ export class PMesh {
 			let vidx2 = f.halfedge.prev.vert.idx + 1;
 
 			let addface = 'f '+vidx0+' '+vidx1+' '+vidx2+' \n';
-			fs.appendFile('base-mesh.txt', addface, err => {
+			fs.appendFile('base-mesh2.txt', addface, err => {
 				if(err) {
 					console.error(err);
 					return;
@@ -345,13 +345,15 @@ export class PMesh {
 		});
 
 		
-		const insert0 = '\n' + fs.readFileSync('pm-test.txt')
-		fs.appendFile('base-mesh.txt', insert0, err => {
+		const insert0 = '-\n' + fs.readFileSync('pm-test2.txt')
+		fs.appendFile('base-mesh2.txt', insert0, err => {
 			if(err) {
 				console.error(err);
 				return;
 			}
 		});
+
+		//console.log(this.faces);
 
 		console.log(this.verts.length);
     console.log(this.faces.length);
@@ -359,7 +361,17 @@ export class PMesh {
     console.log(this.edges.length);
 	}
 
+	startSequence() {
+
+	}
+
+	vsplit() {
+
+	}
+
 	ecol(vt: Vertex, vs: Vertex) {
+		console.log(vt.idx)
+		console.log(vs.idx)
 		//get area on mesh for later update
 		let area: Vertex[] = [];
 		vt.halfedges(h => {
@@ -368,7 +380,7 @@ export class PMesh {
 
 		let empty = true;
 
-		//delete the 2 collapsed faces on edge uv
+		//delete the 2 collapsed faces on edge vtvs
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f == f2) {
@@ -378,11 +390,11 @@ export class PMesh {
 					let vidx1 = f.halfedge.next.vert.idx + 1;
 					let vidx2 = f.halfedge.prev.vert.idx + 1;
 
-					const data = fs.readFileSync('pm-test.txt')
-					const fd = fs.openSync('pm-test.txt', 'w+')
-					const insert0 = Buffer.from('f '+vidx0+' '+vidx1+' '+vidx2+' \n')
-					const insert1 = Buffer.from('v '+vt.idx+'\n' + 'f '+vidx0+' '+vidx1+' '+vidx2+' \n')
-					console.log(insert0)
+					const data = fs.readFileSync('pm-test2.txt')
+					const fd = fs.openSync('pm-test2.txt', 'w+')
+					const insert0 = Buffer.from('z '+vidx0+' '+vidx1+' '+vidx2+' \n')
+					const insert1 = Buffer.from('x '+vt.idx+' '+vs.idx+' '+vt.position.x+' '+vt.position.y+' '+vt.position.z+'\n' + 'y '+vidx0+' '+vidx1+' '+vidx2+' \n')
+					//console.log(insert0)
 					if(empty) {
 						fs.writeSync(fd, insert0, 0, insert0.length, 0)
 						fs.writeSync(fd, data, 0, data.length, insert0.length)
@@ -398,21 +410,58 @@ export class PMesh {
 			});
 		});
 
-		//delete halfedges of collapsed faces
-		vt.halfedges(h => {
-			if(h.next!.vert! == vs) {
-				this.deleteHalfedge(h.next!.idx);
-				this.deleteHalfedge(h.prev!.idx);
-				this.deleteHalfedge(h.idx);
+		vt.faces(f => {
+
+			if(f.halfedge!.next!.vert! != vs && f.halfedge!.next!.next!.vert! != vs) {
+			let vidx0 = f.halfedge.vert.idx;
+			let vidx1 = f.halfedge.next.vert.idx;
+			let vidx2 = f.halfedge.prev.vert.idx;
+
+			if(vidx0 === vt.idx) {
+				vidx0 = vs.idx;
+			} else if(vidx1 === vt.idx) {
+				vidx1 = vs.idx;
+			} else if(vidx2 === vt.idx) {
+				vidx2 = vs.idx;
 			}
-		});
-		vs.halfedges(h => {
-			if(h.next!.vert! == vt) {
-				this.deleteHalfedge(h.next!.idx);
-				this.deleteHalfedge(h.prev!.idx);
-				this.deleteHalfedge(h.idx);
+
+			if(vidx0 === vidx1 || vidx0 === vidx2 || vidx1 === vidx2) {
+				return;
 			}
-		});
+
+			//maybe remove if client different
+			vidx0++;
+			vidx1++;
+			vidx2++;
+
+			const data = fs.readFileSync('pm-test2.txt')
+			const fd = fs.openSync('pm-test2.txt', 'w+')
+			const insert0 = Buffer.from('u '+vidx0+' '+vidx1+' '+vidx2+' \n')
+			
+			fs.writeSync(fd, insert0, 0, insert0.length, 0)
+			fs.writeSync(fd, data, 0, data.length, insert0.length)
+			
+			fs.close(fd, (err) => {
+				if (err) throw err;
+			});
+		}
+	});
+
+	//delete halfedges of collapsed faces
+	vt.halfedges(h => {
+		if(h.next!.vert! == vs) {
+			this.deleteHalfedge(h.next!.idx);
+			this.deleteHalfedge(h.prev!.idx);
+			this.deleteHalfedge(h.idx);
+		}
+	});
+	vs.halfedges(h => {
+		if(h.next!.vert! == vt) {
+			this.deleteHalfedge(h.next!.idx);
+			this.deleteHalfedge(h.prev!.idx);
+			this.deleteHalfedge(h.idx);
+		}
+	});
 
 		//update remaining halfedges
 		vt.halfedges(h => {
