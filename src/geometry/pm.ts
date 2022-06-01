@@ -312,7 +312,7 @@ export class PMesh {
 	pm_simplify() {
 		let nextVert: Vertex;
 
-		while(this.faces.length >= 12) {
+		while(this.faces.length >= 17) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 		}
@@ -353,12 +353,10 @@ export class PMesh {
 			}
 		});
 
-		//console.log(this.faces);
-
-		console.log(this.verts.length);
+		//console.log(this.verts.length);
     console.log(this.faces.length);
-    console.log(this.halfedges.length);
-    console.log(this.edges.length);
+    //console.log(this.halfedges.length);
+    //console.log(this.edges.length);
 	}
 
 	startSequence() {
@@ -370,8 +368,8 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
-		console.log(vt.idx)
-		console.log(vs.idx)
+		//console.log(vt.idx)
+		//console.log(vs.idx)
 		//get area on mesh for later update
 		let area: Vertex[] = [];
 		vt.halfedges(h => {

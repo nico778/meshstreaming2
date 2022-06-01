@@ -3,12 +3,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array( 10 * 3 ); 
+const vertices = new Float32Array( 32000 * 3 ); 
 //const indices = new Float32Array( 20 * 3 ); 
 //let vertices: number[];
 //vertices = [];
 //const indices: number[];
-const indices = new Array(12 * 3);
+const indices = new Array(100000 * 3);
 let updates: number[];
 updates = [];
 let initialvertices = 0;
@@ -258,7 +258,7 @@ const modelsFolder = gui.addFolder('Select Model');
 var params = { 
     stream: () => startStreaming(),
     simplify: () => startCollapsing(),
-    type: ['92', '9', '10', '11', 'cube', 'isocahedron', 'gourd', 'monkey']
+    type: ['cube', 'icosahedron', 'gourd', 'monkey']
 };
 
 gui
@@ -273,12 +273,8 @@ gui
 
 gui
     .add(params, 'type', [
-        '92',
-        '9',
-        '10',
-        '11',
         'cube',
-        'isocahedron',
+        'icosahedron',
         'gourd',
         'monkey'
     ])
