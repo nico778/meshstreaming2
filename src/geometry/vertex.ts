@@ -3,6 +3,7 @@ import {Halfedge} from "./halfedge";
 import {Face} from "./face";
 
 export class Vertex {
+	rm: boolean;
   position: Vector;
   halfedge?: Halfedge;
   uv?: Vector;
@@ -14,6 +15,7 @@ export class Vertex {
   errorCount: number;
 
   constructor(position: Vector) {
+		this.rm = false;
     this.position = position;
     this.idx = -1;
     this.ecolError = -1;
@@ -52,6 +54,7 @@ export class Vertex {
 
   ecol_Error() {
     this.ecolError = 20;
+
     //find the outgoing halfedge with the lowest cost 
     this.halfedges(h => {
       let ecolError = this.h_ecolError(h);
@@ -74,6 +77,7 @@ export class Vertex {
     });
 
     //average ecolError
+		console.log(this.ecolError)
     this.ecolError = this.totalError / this.errorCount;
   }
 
@@ -82,7 +86,22 @@ export class Vertex {
     //two faces on either side of the halfedge
     //select face with biggest distance from those two faces
     let heLen = h.vector().norm();
-    let change = 0; 
+    let change = 0;
+
+		/*let max = 0; 
+		this.halfedges(h => {
+			this.halfedge.next!.vert!.halfedges(h2 => {
+				if(h.next!.vert! == h2.next!.vert!) {
+					max++;
+				}
+			})
+		})
+
+		console.log(max);
+
+		if(max !== 2) {
+			return 100000;
+		}*/
     
     this.faces(f => {
       let minChange = 1;

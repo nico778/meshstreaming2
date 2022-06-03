@@ -20,6 +20,9 @@ export class PMesh {
   full_nvertices: number; //number of vertices in Mn
   full_nwedges: number; //number of wedges in Mn
   full_nfaces: number; //number of faces in Mn
+	current_nvertices: number;
+  current_nwedges: number;
+  current_nfaces: number;
 
   //geomorph end states
   geo_vattribs?: Vertex[];
@@ -109,6 +112,7 @@ export class PMesh {
 		this.faces = new Array(indices.length / 3);
 		this.halfedges = new Array(2 * findEdges.size);
 		this.edges = new Array(findEdges.size);
+		this.vsplits = new Array(this.faces.length / 2);
 
 		//create vertices and store vertex + index in map 
 		for(let i = 0; i < positions.length; i++) {
@@ -280,6 +284,11 @@ export class PMesh {
       e.idx = index++;
     });
 
+		this.full_nvertices = this.verts.length;
+		this.full_nfaces = this.faces.length;
+		this.current_nvertices = this.verts.length;
+		this.current_nfaces = this.faces.length;
+
     console.log(this.verts.length);
     console.log(this.faces.length);
     console.log(this.halfedges.length);
@@ -312,46 +321,18 @@ export class PMesh {
 	pm_simplify() {
 		let nextVert: Vertex;
 
-		while(this.faces.length >= 17) {
+		while(this.current_nfaces >= 11) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
+			this.verts.forEach(v => {
+				if(v.rm === false) {
+				v.ecol_Error();
+				}
+			});
 		}
 
 		this.basePositions = new Array(this.verts.length);
 		this.baseIndices = new Array(this.faces.length*3);
-
-		this.verts.forEach(v => {
-			let addvert = 'v '+v.position.x+' '+v.position.y+' '+v.position.z+' \n';
-			fs.appendFile('base-mesh2.txt', addvert, err => {
-				if(err) {
-					console.error(err);
-					return;
-				}
-			});
-		});
-
-		this.faces.forEach(f => {
-			let vidx0 = f.halfedge.vert.idx + 1;
-			let vidx1 = f.halfedge.next.vert.idx + 1;
-			let vidx2 = f.halfedge.prev.vert.idx + 1;
-
-			let addface = 'f '+vidx0+' '+vidx1+' '+vidx2+' \n';
-			fs.appendFile('base-mesh2.txt', addface, err => {
-				if(err) {
-					console.error(err);
-					return;
-				}
-			});
-		});
-
-		
-		const insert0 = '-\n' + fs.readFileSync('pm-test2.txt')
-		fs.appendFile('base-mesh2.txt', insert0, err => {
-			if(err) {
-				console.error(err);
-				return;
-			}
-		});
 
 		//console.log(this.verts.length);
     console.log(this.faces.length);
@@ -368,151 +349,60 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
-		//console.log(vt.idx)
-		//console.log(vs.idx)
+		console.log(vt.idx)
+		console.log(vs.idx)
 		//get area on mesh for later update
 		let area: Vertex[] = [];
 		vt.halfedges(h => {
 			area.push(h.next!.vert!);
 		});
 
-		let empty = true;
-
 		//delete the 2 collapsed faces on edge vtvs
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f == f2) {
-					this.deleteFace(f.idx);
-
-					let vidx0 = f.halfedge.vert.idx + 1;
-					let vidx1 = f.halfedge.next.vert.idx + 1;
-					let vidx2 = f.halfedge.prev.vert.idx + 1;
-
-					const data = fs.readFileSync('pm-test2.txt')
-					const fd = fs.openSync('pm-test2.txt', 'w+')
-					const insert0 = Buffer.from('z '+vidx0+' '+vidx1+' '+vidx2+' \n')
-					const insert1 = Buffer.from('x '+vt.idx+' '+vs.idx+' '+vt.position.x+' '+vt.position.y+' '+vt.position.z+'\n' + 'y '+vidx0+' '+vidx1+' '+vidx2+' \n')
-					//console.log(insert0)
-					if(empty) {
-						fs.writeSync(fd, insert0, 0, insert0.length, 0)
-						fs.writeSync(fd, data, 0, data.length, insert0.length)
-						empty = false;
-					} else {
-						fs.writeSync(fd, insert1, 0, insert1.length, 0)
-						fs.writeSync(fd, data, 0, data.length, insert1.length)
-					}
-					fs.close(fd, (err) => {
-						if (err) throw err;
-					});
+					//mark face as removed
+					f.rm = true;
+					this.current_nfaces--;
 				}
 			});
 		});
-
-		vt.faces(f => {
-
-			if(f.halfedge!.next!.vert! != vs && f.halfedge!.next!.next!.vert! != vs) {
-			let vidx0 = f.halfedge.vert.idx;
-			let vidx1 = f.halfedge.next.vert.idx;
-			let vidx2 = f.halfedge.prev.vert.idx;
-
-			if(vidx0 === vt.idx) {
-				vidx0 = vs.idx;
-			} else if(vidx1 === vt.idx) {
-				vidx1 = vs.idx;
-			} else if(vidx2 === vt.idx) {
-				vidx2 = vs.idx;
+	
+		//mark halfedges of collapsed faces as removed
+		vt.halfedges(h => {
+			if(h.next!.vert! == vs) {
+				h.next!.rm = true;
+				h.prev!.rm = true;
+				h.rm = true;
 			}
-
-			if(vidx0 === vidx1 || vidx0 === vidx2 || vidx1 === vidx2) {
-				return;
+		});
+		vs.halfedges(h => {
+			if(h.next!.vert! == vt) {
+				h.next!.rm = true;
+				h.prev!.rm = true;
+				h.rm = true;
 			}
-
-			//maybe remove if client different
-			vidx0++;
-			vidx1++;
-			vidx2++;
-
-			const data = fs.readFileSync('pm-test2.txt')
-			const fd = fs.openSync('pm-test2.txt', 'w+')
-			const insert0 = Buffer.from('u '+vidx0+' '+vidx1+' '+vidx2+' \n')
-			
-			fs.writeSync(fd, insert0, 0, insert0.length, 0)
-			fs.writeSync(fd, data, 0, data.length, insert0.length)
-			
-			fs.close(fd, (err) => {
-				if (err) throw err;
-			});
-		}
-	});
-
-	//delete halfedges of collapsed faces
-	vt.halfedges(h => {
-		if(h.next!.vert! == vs) {
-			this.deleteHalfedge(h.next!.idx);
-			this.deleteHalfedge(h.prev!.idx);
-			this.deleteHalfedge(h.idx);
-		}
-	});
-	vs.halfedges(h => {
-		if(h.next!.vert! == vt) {
-			this.deleteHalfedge(h.next!.idx);
-			this.deleteHalfedge(h.prev!.idx);
-			this.deleteHalfedge(h.idx);
-		}
-	});
+		});
 
 		//update remaining halfedges
 		vt.halfedges(h => {
 			h.vert = vs;
 		});
 
-		this.deleteVertex(vt.idx);
+		//mark vt as removed
+		vt.rm = true;
+		vt.ecolError = 100000
+		vt.ecolProspect = null
+		vt.minError = 100000
+		this.current_nvertices--;
 
-		//update correct indices
-    let index = 0;
-    this.verts.forEach(v => {
-      v.idx = index++;
-    });
-    index = 0;
-    this.faces.forEach(f => {
-      f.idx = index++;
-    });
-    index = 0;
-    this.halfedges.forEach(h => {
-      h.idx = index++;
-    });
-		index = 0;
-    this.edges.forEach(e => {
-      e.idx = index++;
-    });
+		let current_vsplit = new Vsplit;
+		current_vsplit.vs_index = vs.idx;
+		current_vsplit.vt_index = vt.idx;
 		
 		//ecol error update in affected area
 		area.forEach(v => {
 			v.ecol_Error();
-		});
-	}
-
-	deleteFace(idx: number) {
-		this.faces.forEach(f => {
-			if(idx === f.idx) {
-				this.faces.splice(idx, 1);
-			}
-		});
-	}
-
-	deleteVertex(idx: number) {
-		this.verts.forEach(v => {
-			if(idx === v.idx) {
-				this.verts.splice(idx, 1);
-			}
-		});
-	}
-
-	deleteHalfedge(idx: number) {
-		this.halfedges.forEach(h => {
-			if(idx === h.idx) {
-				this.halfedges.splice(idx, 1);
-			}
 		});
 	}
 

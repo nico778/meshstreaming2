@@ -4,6 +4,7 @@ import {Edge} from "./edge";
 import {Face} from "./face";
 
 export class Halfedge {
+	rm: boolean;
     vert?: Vertex;
     edge?: Edge;
     face?: Face;
@@ -14,6 +15,7 @@ export class Halfedge {
     onBoundary: boolean;
   
     constructor() {
+			this.rm = false;
       this.idx = -1;
       this.onBoundary = false;
     }

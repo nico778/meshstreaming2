@@ -3,6 +3,7 @@ import {Wedge} from "./wedge";
 import {Halfedge} from "./halfedge";
 
 export class Face {
+	rm: boolean;
     wedges?: Wedge[]; //wedges at corners of the face
     fnei?: Face[]; //3 face neighbors
     matid?: number; //material identifier
@@ -10,6 +11,7 @@ export class Face {
     halfedge?: Halfedge; //maybe
   
     constructor() {
+			this.rm = false;
       this.idx = -1;
     }
 

@@ -41,7 +41,7 @@ class App {
 		this.io = new Server(this.server);
 
 		this.io.on('connection', (socket: Socket) => {
-			console.log(socket.constructor.name);
+			/*console.log(socket.constructor.name);
 			this.clients[socket.id] = {};
 			console.log(this.clients);
 			console.log('a user connected : ' + socket.id);
@@ -121,7 +121,7 @@ class App {
 				} catch (err) {
 					console.error(err);
 				}
-			})();
+			})();*/
 
 			socket.on('request mesh', (msg: any) => {
 				var path = './src/models/'+msg+'.obj';

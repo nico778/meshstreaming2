@@ -4,6 +4,7 @@ import {Vertex} from "./vertex";
 import {Wedge} from "./wedge";
 
 export class Vsplit {
+	vt_index: number;
   flclw?: Face; //a face in neighborhood of vsplit
   vlr_rot?: number; //encoding of vertex vr
   //struct
@@ -20,5 +21,6 @@ export class Vsplit {
 
   constructor() {
     this.vs_index = -1;
+		this.vt_index = -1;
   }
 }
