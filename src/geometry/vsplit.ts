@@ -4,11 +4,13 @@ import {Vertex} from "./vertex";
 import {Wedge} from "./wedge";
 
 export class Vsplit {
+	vs_index: number; //index(0..2) of vs within flclw
 	vt_index: number;
+	new_faces: number[];
+	update: number[];
   flclw?: Face; //a face in neighborhood of vsplit
   vlr_rot?: number; //encoding of vertex vr
   //struct
-  vs_index: number; //index(0..2) of vs within flclw
   corners?: number; //corner continuities of Figure 9
   ii?: number; //geometry prediction of Figure 10
   matid_predict?: number; //are fl_matid, fr_matid required?
@@ -22,5 +24,7 @@ export class Vsplit {
   constructor() {
     this.vs_index = -1;
 		this.vt_index = -1;
+		this.new_faces = new Array(2);
+		this.update = [];
   }
 }

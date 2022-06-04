@@ -168,6 +168,26 @@ class App {
 				socket.emit('update vertices', vertices);
 				socket.emit('update indices', indices);
 			});
+
+			socket.on('request rebuild', () => {
+				pmesh.pm_rebuild();
+
+				vertices = [];
+				indices = [];                                                                                  
+
+				pmesh.verts.forEach(v => {
+					vertices.push(v.position.x);
+					vertices.push(v.position.y);
+					vertices.push(v.position.z);
+				});
+				pmesh.faces.forEach(f => {
+					indices.push(f.halfedge!.vert!.idx);
+					indices.push(f.halfedge!.next!.vert!.idx);
+					indices.push(f.halfedge!.next!.next!.vert!.idx);
+				});
+				socket.emit('update vertices', vertices);
+				socket.emit('update indices', indices);
+			});
 		});
 	}
 

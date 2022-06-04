@@ -157,6 +157,10 @@ function startCollapsing() {
 	socket.emit('request simplify');
 }
 
+function startRebuilding() {
+	socket.emit('request rebuild');
+}
+
 function shiftRight(array: Float32Array) {
 	array.set(array.subarray(0, -3), 3)
 	array.fill(0, 0, 3)
@@ -174,6 +178,7 @@ const modelsFolder = gui.addFolder('Select Model');
 var params = { 
 	stream: () => startStreaming(),
 	simplify: () => startCollapsing(),
+	rebuild: () => startRebuilding(),
 	type: ['cube', 'icosahedron', 'gourd', 'monkey']
 };
 
@@ -185,6 +190,11 @@ gui
 gui
 	.add(params,'simplify')
 	.name('simplify mesh')
+	.listen();
+
+gui
+	.add(params,'rebuild')
+	.name('rebuild mesh')
 	.listen();
 
 gui

@@ -340,6 +340,10 @@ export class PMesh {
     //console.log(this.edges.length);
 	}
 
+	pm_rebuild() {
+		
+	}
+
 	startSequence() {
 
 	}
@@ -351,6 +355,11 @@ export class PMesh {
 	ecol(vt: Vertex, vs: Vertex) {
 		console.log(vt.idx)
 		console.log(vs.idx)
+
+		let current_vsplit = new Vsplit;
+		current_vsplit.vs_index = vs.idx;
+		current_vsplit.vt_index = vt.idx;
+
 		//get area on mesh for later update
 		let area: Vertex[] = [];
 		vt.halfedges(h => {
@@ -360,12 +369,19 @@ export class PMesh {
 		//delete the 2 collapsed faces on edge vtvs
 		vt.faces(f => {
 			vs.faces(f2 => {
-				if(f == f2) {
+				if(f.idx === f2.idx) {
+					current_vsplit.new_faces.push(f.idx);
 					//mark face as removed
 					f.rm = true;
 					this.current_nfaces--;
 				}
 			});
+		});
+
+		vt.faces(f => {
+			if(f.idx !== current_vsplit.new_faces[0] && f.idx !== current_vsplit.new_faces[1]) {
+				current_vsplit.update.push(f.idx);
+			}
 		});
 	
 		//mark halfedges of collapsed faces as removed
@@ -395,10 +411,6 @@ export class PMesh {
 		vt.ecolProspect = null
 		vt.minError = 100000
 		this.current_nvertices--;
-
-		let current_vsplit = new Vsplit;
-		current_vsplit.vs_index = vs.idx;
-		current_vsplit.vt_index = vt.idx;
 		
 		//ecol error update in affected area
 		area.forEach(v => {
