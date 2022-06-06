@@ -170,23 +170,51 @@ class App {
 			});
 
 			socket.on('request rebuild', () => {
-				pmesh.pm_rebuild();
+				//pmesh.pm_rebuild();
 
 				vertices = [];
-				indices = [];                                                                                  
+				indices = [];
+				vertices2 = [];
+				indices2 = [];
 
-				pmesh.verts.forEach(v => {
-					vertices.push(v.position.x);
-					vertices.push(v.position.y);
-					vertices.push(v.position.z);
+				console.log(pmesh.basePositions)
+				
+				pmesh.basePositions.forEach(p => {
+					//console.log(p)
+					vertices.push(p);
+					vertices.push(pmesh.verts[p].position.x);
+					vertices.push(pmesh.verts[p].position.y);
+					vertices.push(pmesh.verts[p].position.z);
 				});
-				pmesh.faces.forEach(f => {
-					indices.push(f.halfedge!.vert!.idx);
-					indices.push(f.halfedge!.next!.vert!.idx);
-					indices.push(f.halfedge!.next!.next!.vert!.idx);
+
+				pmesh.baseIndices.forEach(i => {
+					//console.log(i)
+					indices.push(i);
+					indices.push(pmesh.faces[i].halfedge!.vert!.idx);
+					indices.push(pmesh.faces[i].halfedge!.next!.vert!.idx);
+					indices.push(pmesh.faces[i].halfedge!.prev!.vert!.idx);
 				});
-				socket.emit('update vertices', vertices);
-				socket.emit('update indices', indices);
+
+				console.log(vertices)
+
+				socket.emit('stream base vertices', vertices);
+				socket.emit('stream base indices', indices);
+/*
+				pmesh.vsplits.forEach(vs => {
+					vertices2.push(vs.vt_index);
+					for(let i = 0; i < 3; i++) {
+						vertices2.push(vs.vt_position[i])
+					}
+					for(let i = 0; i < 8; i++) {
+						indices2.push(vs.new_faces[i])
+					}
+
+					socket.emit('update vertices', vertices2);
+					socket.emit('update indices', indices2);
+
+					vertices2 = [];
+					indices2 = [];
+				});*/
 			});
 		});
 	}

@@ -289,10 +289,10 @@ export class PMesh {
 		this.current_nvertices = this.verts.length;
 		this.current_nfaces = this.faces.length;
 
-    console.log(this.verts.length);
-    console.log(this.faces.length);
-    console.log(this.halfedges.length);
-    console.log(this.edges.length);
+    //console.log(this.verts.length);
+    //console.log(this.faces.length);
+    //console.log(this.halfedges.length);
+    //console.log(this.edges.length);
   }
 
   //apply vsplit
@@ -320,10 +320,12 @@ export class PMesh {
 
 	pm_simplify() {
 		let nextVert: Vertex;
+		let i = 0;
 
 		while(this.current_nfaces >= 11) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
+			i++;
 			this.verts.forEach(v => {
 				if(v.rm === false) {
 				v.ecol_Error();
@@ -331,11 +333,29 @@ export class PMesh {
 			});
 		}
 
-		this.basePositions = new Array(this.verts.length);
-		this.baseIndices = new Array(this.faces.length*3);
+		this.basePositions = new Array(this.verts.length - i);
+		this.baseIndices = new Array(this.faces.length*3 - (i*2));
+
+		let vi = 0;
+		this.verts.forEach(v => {
+			if(v.rm === false) {
+				//console.log(v.idx)
+				this.basePositions[vi] = v.idx;
+				vi++;
+			}
+		});
+
+		let fi = 0;
+		this.faces.forEach(f => {
+			if(f.rm === false) {
+				//console.log(f.idx)
+				this.baseIndices[fi] = f.idx;
+				fi++;
+			}
+		});
 
 		//console.log(this.verts.length);
-    console.log(this.faces.length);
+    //console.log(this.faces.length);
     //console.log(this.halfedges.length);
     //console.log(this.edges.length);
 	}
@@ -353,12 +373,15 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
-		console.log(vt.idx)
-		console.log(vs.idx)
+		//console.log(vt.idx)
+		//console.log(vs.idx)
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
 		current_vsplit.vt_index = vt.idx;
+		current_vsplit.vt_position[0] = this.verts[vt.idx].position.x;
+		current_vsplit.vt_position[1] = this.verts[vt.idx].position.y;
+		current_vsplit.vt_position[2] = this.verts[vt.idx].position.z;
 
 		//get area on mesh for later update
 		let area: Vertex[] = [];
@@ -366,11 +389,17 @@ export class PMesh {
 			area.push(h.next!.vert!);
 		});
 
+		let ftest: number[];
+		ftest = [];
 		//delete the 2 collapsed faces on edge vtvs
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f.idx === f2.idx) {
+					ftest.push(f.idx);
 					current_vsplit.new_faces.push(f.idx);
+					current_vsplit.new_faces.push(f.halfedge!.vert!.idx);
+					current_vsplit.new_faces.push(f.halfedge!.next!.vert!.idx);
+					current_vsplit.new_faces.push(f.halfedge!.prev!.vert!.idx);
 					//mark face as removed
 					f.rm = true;
 					this.current_nfaces--;
@@ -379,7 +408,7 @@ export class PMesh {
 		});
 
 		vt.faces(f => {
-			if(f.idx !== current_vsplit.new_faces[0] && f.idx !== current_vsplit.new_faces[1]) {
+			if(f.idx !== ftest[0] && f.idx !== ftest[1]) {
 				current_vsplit.update.push(f.idx);
 			}
 		});

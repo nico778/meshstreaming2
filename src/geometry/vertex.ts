@@ -77,7 +77,7 @@ export class Vertex {
     });
 
     //average ecolError
-		console.log(this.ecolError)
+		//console.log(this.ecolError)
     this.ecolError = this.totalError / this.errorCount;
   }
 

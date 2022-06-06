@@ -6,6 +6,7 @@ import {Wedge} from "./wedge";
 export class Vsplit {
 	vs_index: number; //index(0..2) of vs within flclw
 	vt_index: number;
+	vt_position = new Float32Array(3);
 	new_faces: number[];
 	update: number[];
   flclw?: Face; //a face in neighborhood of vsplit
@@ -24,7 +25,7 @@ export class Vsplit {
   constructor() {
     this.vs_index = -1;
 		this.vt_index = -1;
-		this.new_faces = new Array(2);
+		this.new_faces = new Array(8);
 		this.update = [];
   }
 }

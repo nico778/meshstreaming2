@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(32000 * 3 );
-const indices = new Array(100000 * 3);
+const vertices = new Float32Array(12 * 4 );
+const indices = new Array(20 * 4);
 let updates: number[];
 updates = [];
 let initialvertices = 0;
@@ -35,6 +35,7 @@ function onWindowResize() {
 }
 
 function buildMesh() {
+
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setIndex(indices)
 	const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
@@ -52,19 +53,48 @@ socket.on('disconnect', function (message: any) {
 });
 
 socket.on('stream vertices', (verts:number[]) => {
-	initialvertices = verts.length;
+	//initialvertices = verts.length;
+	console.log(verts)
 
 	let i=0
 	verts.forEach( v => {
 		vertices[i] = v;
 		i++;
 	});
+	//console.log(vertices);
 });
 socket.on('stream indices', (inds:number[]) => {
 	inds.forEach( f => {
 		indices[addPoint] = f;
 		addPoint++;
 	});
+	//console.log(indices);
+	buildMesh();
+});
+
+socket.on('stream base vertices', (verts:number[]) => {
+	//initialvertices = verts.length;
+	console.log(verts)
+
+	for(let i = 0; i < verts.length; i+=4) {
+		vertices[verts[i]*3] = verts[i + 1];
+		vertices[verts[i]*3 + 1] = verts[i + 2];
+		vertices[verts[i]*3 + 2] = verts[i + 3];
+	}
+	//console.log(vertices);
+});
+socket.on('stream base indices', (inds:number[]) => {
+	/*inds.forEach( f => {
+		indices[addPoint] = f;
+		addPoint++;
+	});*/
+	for(let i = 0; i < inds.length; i+=4) {
+		indices[inds[i]*3] = inds[i + 1];
+		indices[inds[i]*3 + 1] = inds[i + 2];
+		indices[inds[i]*3 + 2] = inds[i + 3];
+	}
+
+	//console.log(indices);
 	buildMesh();
 });
  
@@ -158,6 +188,11 @@ function startCollapsing() {
 }
 
 function startRebuilding() {
+	if (mesh !== null) {
+		scene.remove(mesh);
+		vertices.fill(0);
+		indices.fill(0);
+	}
 	socket.emit('request rebuild');
 }
 
