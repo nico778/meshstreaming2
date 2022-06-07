@@ -339,7 +339,6 @@ export class PMesh {
 		let vi = 0;
 		this.verts.forEach(v => {
 			if(v.rm === false) {
-				//console.log(v.idx)
 				this.basePositions[vi] = v.idx;
 				vi++;
 			}
@@ -348,16 +347,10 @@ export class PMesh {
 		let fi = 0;
 		this.faces.forEach(f => {
 			if(f.rm === false) {
-				//console.log(f.idx)
 				this.baseIndices[fi] = f.idx;
 				fi++;
 			}
 		});
-
-		//console.log(this.verts.length);
-    //console.log(this.faces.length);
-    //console.log(this.halfedges.length);
-    //console.log(this.edges.length);
 	}
 
 	pm_rebuild() {
@@ -373,8 +366,6 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
-		//console.log(vt.idx)
-		//console.log(vs.idx)
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
@@ -402,7 +393,7 @@ export class PMesh {
 					current_vsplit.new_faces[nf + 2] = f.halfedge!.next!.vert!.idx;
 					current_vsplit.new_faces[nf + 3] = f.halfedge!.prev!.vert!.idx;
 					nf += 4;
-					//console.log(current_vsplit.new_faces)
+					
 					//mark face as removed
 					f.rm = true;
 					this.current_nfaces--;

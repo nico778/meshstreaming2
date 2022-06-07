@@ -53,41 +53,28 @@ socket.on('disconnect', function (message: any) {
 });
 
 socket.on('stream vertices', (verts:number[]) => {
-	//initialvertices = verts.length;
-	//console.log(verts)
-
 	let i=0
 	verts.forEach( v => {
 		vertices[i] = v;
 		i++;
 	});
-	//console.log(vertices);
 });
 socket.on('stream indices', (inds:number[]) => {
 	inds.forEach( f => {
 		indices[addPoint] = f;
 		addPoint++;
 	});
-	//console.log(indices);
 	buildMesh();
 });
 
 socket.on('stream base vertices', (verts:number[]) => {
-	//initialvertices = verts.length;
-	//console.log(verts)
-
 	for(let i = 0; i < verts.length; i+=4) {
 		vertices[verts[i]*3] = verts[i + 1];
 		vertices[verts[i]*3 + 1] = verts[i + 2];
 		vertices[verts[i]*3 + 2] = verts[i + 3];
 	}
-	//console.log(vertices);
 });
 socket.on('stream base indices', (inds:number[]) => {
-	/*inds.forEach( f => {
-		indices[addPoint] = f;
-		addPoint++;
-	});*/
 	for(let i = 0; i < inds.length; i+=4) {
 		indices[inds[i]*3] = inds[i + 1];
 		indices[inds[i]*3 + 1] = inds[i + 2];
@@ -97,34 +84,28 @@ socket.on('stream base indices', (inds:number[]) => {
 	buildMesh();
 });
 socket.on('vsplit vertices', (verts:number[]) => {
-	//initialvertices = verts.length;
-	//console.log(verts)
-		vertices[verts[0]*3] = verts[0 + 1];
-		vertices[verts[0]*3 + 1] = verts[0 + 2];
-		vertices[verts[0]*3 + 2] = verts[0 + 3];
+	vertices[verts[0]*3] = verts[0 + 1];
+	vertices[verts[0]*3 + 1] = verts[0 + 2];
+	vertices[verts[0]*3 + 2] = verts[0 + 3];
 
-		//mesh.geometry.attributes.position.needsUpdate = true;
-		//mesh.geometry.computeBoundingBox();
-		//mesh.geometry.computeBoundingSphere();
-		//geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-	//console.log(vertices);
+	//mesh.geometry.attributes.position.needsUpdate = true;
+	//mesh.geometry.computeBoundingBox();
+	//mesh.geometry.computeBoundingSphere();
+	//geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('vsplit indices', (inds:number[]) => {
-	//console.log(inds[1]);
-		indices[inds[0]*3] = inds[0 + 1];
-		indices[inds[0]*3 + 1] = inds[0 + 2];
-		indices[inds[0]*3 + 2] = inds[0 + 3];
+	indices[inds[0]*3] = inds[0 + 1];
+	indices[inds[0]*3 + 1] = inds[0 + 2];
+	indices[inds[0]*3 + 2] = inds[0 + 3];
 
-		indices[inds[4]*3] = inds[4 + 1];
-		indices[inds[4]*3 + 1] = inds[4 + 2];
-		indices[inds[4]*3 + 2] = inds[4 + 3];
+	indices[inds[4]*3] = inds[4 + 1];
+	indices[inds[4]*3 + 1] = inds[4 + 2];
+	indices[inds[4]*3 + 2] = inds[4 + 3];
 	
-		//console.log(indices);
-		//mesh.geometry.attributes.index.needsUpdate = true;
+	//mesh.geometry.attributes.index.needsUpdate = true;
 	//buildMesh();
 });
 socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
-	console.log(vs, vt)
 	ups.forEach(u => {
 		if(indices[u*3] === vs) {
 			indices[u*3] = vt;
@@ -142,80 +123,12 @@ socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
 	//mesh.geometry.setIndex(indices);
 	//mesh.geometry.index!.needsUpdate = true;
 });
-
  
 socket.on('update vertices', (vertices) => {
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('update indices', (indices) => {
   geometry.setIndex(indices);
-});
-
-socket.on('stream updates', (updates2) => {
-  geometry.setIndex(indices);
-});
-
-socket.on('stream vsplit', (updates2, vertices2, indices2) => {
-	for(let i = 0; i < indices.length; i++) {
-		indices[i]++;
-	}
-
-	for(let i = 0; i < indices.length; i++) {
-		if(indices[i] > vertices2[0]) {
-			indices[i]++;
-		}
-	}
-
-	//update indices of faces with vertex change not part of vsplit
-	for(let i = 0; i < indices.length; i+=3) {
-		for(let j = 0; j < updates2.length; j+=3) {
-			let control = [updates2[j], updates2[j+1], updates2[j+2]]
-			check = [indices[i], indices[i+1], indices[i+2]]
-
-			if(control.every(r => check.includes(r))){
-				console.log('Found', control, 'in', check);
-				if(indices[i] === (vertices2[1] + 1)) {
-					console.log('0')
-					indices[i] = vertices2[0] + 1
-				} else if(indices[i+1] === (vertices2[1] + 1)) {
-					console.log('1')
-					indices[i+1] = vertices2[0] + 1
-				} else if(indices[i+2] === (vertices2[1] + 1)) {
-					console.log('2')
-					indices[i+2] = vertices2[0] + 1
-				}
-			}
-		}
-	}
-
-	check = []
-
-	//update vertices
-	vertices.copyWithin(vertices2[0]*3 + 3, vertices2[0]*3);
-
-	let newVert = vertices2[0]*3;
-
-	vertices[newVert] = vertices2[2]
-	vertices[newVert + 1] = vertices2[3]
-	vertices[newVert + 2] = vertices2[4]
-
-	//add new faces
-	for(let i = 0; i < 6; i++) {
-		indices[addPoint] = indices2[i];
-		addPoint++;
-	}
-
-	console.log(vertices)
-	console.log(indices)
-	console.log(updates2)
-	console.log(vertices2)
-	console.log(indices2)
-
-	for(let i = 0; i < indices.length; i++) {
-		indices[i]--;
-	}
-
-	buildMesh()
 });
 
 function startStreaming() {
@@ -241,13 +154,6 @@ function startRebuilding() {
 	}
 	socket.emit('request rebuild');
 }
-
-function shiftRight(array: Float32Array) {
-	array.set(array.subarray(0, -3), 3)
-	array.fill(0, 0, 3)
-	return array
-}
-
 
 const gui = new GUI();
 
