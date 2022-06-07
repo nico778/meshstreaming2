@@ -176,6 +176,7 @@ class App {
 				indices = [];
 				vertices2 = [];
 				indices2 = [];
+				updates2 = [];
 
 				console.log(pmesh.basePositions)
 				
@@ -199,7 +200,7 @@ class App {
 
 				socket.emit('stream base vertices', vertices);
 				socket.emit('stream base indices', indices);
-/*
+
 				pmesh.vsplits.forEach(vs => {
 					vertices2.push(vs.vt_index);
 					for(let i = 0; i < 3; i++) {
@@ -208,13 +209,18 @@ class App {
 					for(let i = 0; i < 8; i++) {
 						indices2.push(vs.new_faces[i])
 					}
+					vs.update.forEach(u => {
+						updates2.push(u);
+					});
 
-					socket.emit('update vertices', vertices2);
-					socket.emit('update indices', indices2);
+					socket.emit('vsplit vertices', vertices2);
+					socket.emit('vsplit indices', indices2);
+					socket.emit('vsplit updates', vs.vs_index, vs.vt_index, updates2);
 
 					vertices2 = [];
 					indices2 = [];
-				});*/
+					updates2 = [];
+				});
 			});
 		});
 	}

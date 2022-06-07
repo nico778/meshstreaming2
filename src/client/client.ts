@@ -54,7 +54,7 @@ socket.on('disconnect', function (message: any) {
 
 socket.on('stream vertices', (verts:number[]) => {
 	//initialvertices = verts.length;
-	console.log(verts)
+	//console.log(verts)
 
 	let i=0
 	verts.forEach( v => {
@@ -74,7 +74,7 @@ socket.on('stream indices', (inds:number[]) => {
 
 socket.on('stream base vertices', (verts:number[]) => {
 	//initialvertices = verts.length;
-	console.log(verts)
+	//console.log(verts)
 
 	for(let i = 0; i < verts.length; i+=4) {
 		vertices[verts[i]*3] = verts[i + 1];
@@ -97,6 +97,50 @@ socket.on('stream base indices', (inds:number[]) => {
 	//console.log(indices);
 	buildMesh();
 });
+socket.on('vsplit vertices', (verts:number[]) => {
+	//initialvertices = verts.length;
+	//console.log(verts)
+
+		vertices[verts[0]*3] = verts[0 + 1];
+		vertices[verts[0]*3 + 1] = verts[0 + 2];
+		vertices[verts[0]*3 + 2] = verts[0 + 3];
+
+		mesh.geometry.attributes.position.needsUpdate = true;
+	
+	//console.log(vertices);
+});
+socket.on('vsplit indices', (inds:number[]) => {
+	/*inds.forEach( f => {
+		indices[addPoint] = f;
+		addPoint++;
+	});*/
+	
+		indices[inds[0]*3] = inds[0 + 1];
+		indices[inds[0]*3 + 1] = inds[0 + 2];
+		indices[inds[0]*3 + 2] = inds[0 + 3];
+
+		indices[inds[4]*3] = inds[4 + 1];
+		indices[inds[4]*3 + 1] = inds[4 + 2];
+		indices[inds[4]*3 + 2] = inds[4 + 3];
+	
+
+	//console.log(indices);
+	//buildMesh();
+});
+socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
+	ups.forEach(u => {
+		if(indices[u*3] === vs) {
+			indices[u*3] === vt
+		} else if(indices[u*3 + 1] === vs) {
+			indices[u*3 + 1] === vt
+		} else if(indices[u*3 + 2] === vs) {
+			indices[u*3 + 2] === vt
+		}
+	});
+	mesh.geometry.attributes.index.needsUpdate = true;
+	render();
+});
+
  
 socket.on('update vertices', (vertices) => {
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
