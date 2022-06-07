@@ -178,7 +178,7 @@ class App {
 				indices2 = [];
 				updates2 = [];
 
-				console.log(pmesh.basePositions)
+				//console.log(pmesh.basePositions)
 				
 				pmesh.basePositions.forEach(p => {
 					//console.log(p)
@@ -196,10 +196,12 @@ class App {
 					indices.push(pmesh.faces[i].halfedge!.prev!.vert!.idx);
 				});
 
-				console.log(vertices)
+				//console.log(vertices)
 
 				socket.emit('stream base vertices', vertices);
 				socket.emit('stream base indices', indices);
+
+				//console.log(pmesh.vsplits)
 
 				pmesh.vsplits.forEach(vs => {
 					vertices2.push(vs.vt_index);
@@ -207,16 +209,18 @@ class App {
 						vertices2.push(vs.vt_position[i])
 					}
 					for(let i = 0; i < 8; i++) {
+						//console.log(vs.new_faces[i])
 						indices2.push(vs.new_faces[i])
 					}
 					vs.update.forEach(u => {
 						updates2.push(u);
+						console.log(updates2)
 					});
 
 					socket.emit('vsplit vertices', vertices2);
 					socket.emit('vsplit indices', indices2);
 					socket.emit('vsplit updates', vs.vs_index, vs.vt_index, updates2);
-
+					
 					vertices2 = [];
 					indices2 = [];
 					updates2 = [];

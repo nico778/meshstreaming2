@@ -322,7 +322,7 @@ export class PMesh {
 		let nextVert: Vertex;
 		let i = 0;
 
-		while(this.current_nfaces >= 11) {
+		while(this.current_nfaces >= 13) {
 			nextVert = this.lowest_ecolError();
 			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
 			i++;
@@ -391,15 +391,18 @@ export class PMesh {
 
 		let ftest: number[];
 		ftest = [];
+		let nf = 0;
 		//delete the 2 collapsed faces on edge vtvs
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f.idx === f2.idx) {
 					ftest.push(f.idx);
-					current_vsplit.new_faces.push(f.idx);
-					current_vsplit.new_faces.push(f.halfedge!.vert!.idx);
-					current_vsplit.new_faces.push(f.halfedge!.next!.vert!.idx);
-					current_vsplit.new_faces.push(f.halfedge!.prev!.vert!.idx);
+					current_vsplit.new_faces[nf] = f.idx;
+					current_vsplit.new_faces[nf + 1] = f.halfedge!.vert!.idx;
+					current_vsplit.new_faces[nf + 2] = f.halfedge!.next!.vert!.idx;
+					current_vsplit.new_faces[nf + 3] = f.halfedge!.prev!.vert!.idx;
+					nf += 4;
+					//console.log(current_vsplit.new_faces)
 					//mark face as removed
 					f.rm = true;
 					this.current_nfaces--;
@@ -440,6 +443,8 @@ export class PMesh {
 		vt.ecolProspect = null
 		vt.minError = 100000
 		this.current_nvertices--;
+
+		this.vsplits.push(current_vsplit);
 		
 		//ecol error update in affected area
 		area.forEach(v => {

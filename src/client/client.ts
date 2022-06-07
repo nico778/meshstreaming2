@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(12 * 4 );
-const indices = new Array(20 * 4);
+const vertices = new Float32Array(12 * 3);
+const indices = new Array(20 * 3);
 let updates: number[];
 updates = [];
 let initialvertices = 0;
@@ -94,27 +94,23 @@ socket.on('stream base indices', (inds:number[]) => {
 		indices[inds[i]*3 + 2] = inds[i + 3];
 	}
 
-	//console.log(indices);
 	buildMesh();
 });
 socket.on('vsplit vertices', (verts:number[]) => {
 	//initialvertices = verts.length;
 	//console.log(verts)
-
 		vertices[verts[0]*3] = verts[0 + 1];
 		vertices[verts[0]*3 + 1] = verts[0 + 2];
 		vertices[verts[0]*3 + 2] = verts[0 + 3];
 
-		mesh.geometry.attributes.position.needsUpdate = true;
-	
+		//mesh.geometry.attributes.position.needsUpdate = true;
+		//mesh.geometry.computeBoundingBox();
+		//mesh.geometry.computeBoundingSphere();
+		//geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 	//console.log(vertices);
 });
 socket.on('vsplit indices', (inds:number[]) => {
-	/*inds.forEach( f => {
-		indices[addPoint] = f;
-		addPoint++;
-	});*/
-	
+	//console.log(inds[1]);
 		indices[inds[0]*3] = inds[0 + 1];
 		indices[inds[0]*3 + 1] = inds[0 + 2];
 		indices[inds[0]*3 + 2] = inds[0 + 3];
@@ -123,22 +119,28 @@ socket.on('vsplit indices', (inds:number[]) => {
 		indices[inds[4]*3 + 1] = inds[4 + 2];
 		indices[inds[4]*3 + 2] = inds[4 + 3];
 	
-
-	//console.log(indices);
+		//console.log(indices);
+		//mesh.geometry.attributes.index.needsUpdate = true;
 	//buildMesh();
 });
 socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
+	console.log(vs, vt)
 	ups.forEach(u => {
 		if(indices[u*3] === vs) {
-			indices[u*3] === vt
+			indices[u*3] = vt;
+			console.log('0')
 		} else if(indices[u*3 + 1] === vs) {
-			indices[u*3 + 1] === vt
+			indices[u*3 + 1] = vt;
+			console.log('1')
 		} else if(indices[u*3 + 2] === vs) {
-			indices[u*3 + 2] === vt
+			indices[u*3 + 2] = vt;
+			console.log('2')
 		}
 	});
-	mesh.geometry.attributes.index.needsUpdate = true;
-	render();
+	console.log(indices);
+	buildMesh();
+	//mesh.geometry.setIndex(indices);
+	//mesh.geometry.index!.needsUpdate = true;
 });
 
  
