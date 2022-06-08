@@ -319,17 +319,23 @@ export class PMesh {
   }
 
 	pm_simplify() {
-		let nextVert: Vertex;
+		//let nextVert: Vertex;
+		let remaining: Vertex;
 		let i = 0;
 
-		while(this.current_nfaces >= 13) {
-			nextVert = this.lowest_ecolError();
-			this.ecol(nextVert, nextVert.halfedge!.next!.vert!);
+		while(this.current_nfaces >= 9) {
+			let nextVert = this.lowest_ecolError();
+			if(!nextVert) {
+				console.log('no next vertex found');
+				break;
+			}
+
+			this.ecol(nextVert, nextVert.ecolProspect);
 			i++;
 			this.verts.forEach(v => {
-				if(v.rm === false) {
+				//if(v.rm === false) {
 				v.ecol_Error();
-				}
+				//}
 			});
 		}
 
@@ -409,14 +415,14 @@ export class PMesh {
 	
 		//mark halfedges of collapsed faces as removed
 		vt.halfedges(h => {
-			if(h.next!.vert! == vs) {
+			if(h.next!.vert!.idx === vs.idx) {
 				h.next!.rm = true;
 				h.prev!.rm = true;
 				h.rm = true;
 			}
 		});
 		vs.halfedges(h => {
-			if(h.next!.vert! == vt) {
+			if(h.next!.vert!.idx === vt.idx) {
 				h.next!.rm = true;
 				h.prev!.rm = true;
 				h.rm = true;
@@ -443,15 +449,16 @@ export class PMesh {
 		});
 	}
 
-	lowest_ecolError(): Vertex {
+	lowest_ecolError() {
 		let lowest = this.verts[0];
 
 		this.verts.forEach(v => {
+			//&& v.ecolError < 100000 && v.ecolProspect
 			if(v.ecolError < lowest.ecolError) {
 				lowest = v;
 			}
 		});
-
+		
 		return lowest;
 	}
 }

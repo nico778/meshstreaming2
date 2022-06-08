@@ -123,7 +123,6 @@ class App {
 					}
 					vs.update.forEach(u => {
 						updates2.push(u);
-						console.log(updates2)
 					});
 
 					socket.emit('vsplit vertices', vertices2);

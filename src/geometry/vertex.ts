@@ -9,7 +9,7 @@ export class Vertex {
   uv?: Vector;
   idx: number;
   ecolError: number;
-  ecolProspect?: Halfedge;
+  ecolProspect: Vertex;
   minError: number;
   totalError: number;
   errorCount: number;
@@ -18,11 +18,11 @@ export class Vertex {
 		this.rm = false;
     this.position = position;
     this.idx = -1;
-    this.ecolError = -1;
-    this.minError = -1;
-    this.totalError = -1;
-    this.errorCount = -1;
-    //this.ecolProspect = null;
+    //this.ecolError = -1;
+    //this.minError = -1;
+    //this.totalError = -1;
+    //this.errorCount = -1;
+    this.ecolProspect = null;
   }
 
   delta() {
@@ -53,7 +53,7 @@ export class Vertex {
   }
 
   ecol_Error() {
-    this.ecolError = 20;
+    this.ecolError = 100000;
 
     //find the outgoing halfedge with the lowest cost 
     this.halfedges(h => {
@@ -62,7 +62,7 @@ export class Vertex {
       if(!this.ecolProspect) {
         this.ecolError = ecolError;
         this.minError = ecolError;
-        this.ecolProspect = h;
+        this.ecolProspect = h.next!.vert;
         this.totalError = 0;
         this.errorCount = 0;
       }
@@ -71,7 +71,7 @@ export class Vertex {
       this.errorCount++;
 
       if(ecolError < this.minError) {
-        this.ecolProspect = h;
+        this.ecolProspect = h.next!.vert;
         this.minError = ecolError;
       }
     });
@@ -87,34 +87,39 @@ export class Vertex {
     //select face with biggest distance from those two faces
     let heLen = h.vector().norm();
     let change = 0;
+		let incidentFaces = [];
 
-		/*let max = 0; 
+		this.faces(f => {
+      h.next!.vert!.faces(f2 => {
+        if(f.idx === f2.idx) {
+          incidentFaces.push(f);
+        }
+      });
+    });
+/*
+		let max = 0; 
 		this.halfedges(h => {
 			this.halfedge.next!.vert!.halfedges(h2 => {
-				if(h.next!.vert! == h2.next!.vert!) {
+				if(h.next!.vert!.idx === h2.next!.vert!.idx) {
 					max++;
 				}
 			})
 		})
 
-		console.log(max);
-
 		if(max !== 2) {
+			//console.log(max);
 			return 100000;
 		}*/
     
     this.faces(f => {
       let minChange = 1;
 
-      h.next!.vert!.faces(f2 => {
-        if(f == f2) {
-          minChange = Math.min(minChange, (1 - (f.normal().dot(f.normal()))) / 2);
-        }
-      });
+			incidentFaces.forEach(i => {
+				minChange = Math.min(minChange, (1.001 - (f.normal().dot(i.normal()))) / 2);
+			});
 
-      change = Math.max(change, minChange);
+			change = Math.max(change, minChange);
     });
-
     return heLen * change;
   }
 }
