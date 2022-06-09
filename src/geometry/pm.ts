@@ -112,7 +112,7 @@ export class PMesh {
 		this.faces = new Array(indices.length / 3);
 		this.halfedges = new Array(2 * findEdges.size);
 		this.edges = new Array(findEdges.size);
-		this.vsplits = new Array(this.faces.length / 2);
+		//this.vsplits = new Array(5);
 
 		//create vertices and store vertex + index in map 
 		for(let i = 0; i < positions.length; i++) {
@@ -357,6 +357,8 @@ export class PMesh {
 				fi++;
 			}
 		});
+
+		console.log(this.vsplits)
 	}
 
 	pm_rebuild() {
@@ -420,6 +422,8 @@ export class PMesh {
 				current_vsplit.update.push(f.idx);
 			}
 		});
+		console.log(current_vsplit.new_faces[0], current_vsplit.new_faces[5])
+		console.log(current_vsplit.update)
 	
 		vt.faces(f => {
 			vs.faces(f2 => {

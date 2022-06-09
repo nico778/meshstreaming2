@@ -7,6 +7,7 @@ import {PMesh} from '../geometry/pm';
 import {Vector} from '../geometry/vector';
 import * as events from 'events';
 import * as readline from 'readline';
+import { Vsplit } from '../geometry/vsplit';
 
 const port: number = 3000;
 
@@ -114,9 +115,12 @@ class App {
 				socket.emit('stream base vertices', vertices);
 				socket.emit('stream base indices', indices);
 
-				let x = 0;
-				
-				pmesh.vsplits.forEach(vs => {
+				//let x = pmesh.vsplits.length;
+				let vs: Vsplit
+				let x = 5
+				while(x > 0) {
+					vs = pmesh.vsplits[x - 1];
+				//pmesh.vsplits.forEach(vs => {
 					//if(x === 0) {
 					vertices2.push(vs.vt_index);
 					for(let i = 0; i < 3; i++) {
@@ -136,9 +140,9 @@ class App {
 					vertices2 = [];
 					indices2 = [];
 					updates2 = [];
-					//x++;
-				//}
-				});
+					x--;
+				}
+				//});
 			});
 		});
 	}
