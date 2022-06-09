@@ -78,11 +78,12 @@ class App {
 					vertices.push(v.position.y);
 					vertices.push(v.position.z);
 				});
-				pmesh.faces.forEach(f => {
-					indices.push(f.halfedge!.vert!.idx);
-					indices.push(f.halfedge!.next!.vert!.idx);
-					indices.push(f.halfedge!.next!.next!.vert!.idx);
+				pmesh.baseIndices.forEach(i => {
+					indices.push(pmesh.faces[i].halfedge!.vert!.idx);
+					indices.push(pmesh.faces[i].halfedge!.next!.vert!.idx);
+					indices.push(pmesh.faces[i].halfedge!.prev!.vert!.idx);
 				});
+				
 				socket.emit('update vertices', vertices);
 				socket.emit('update indices', indices);
 			});
@@ -113,7 +114,10 @@ class App {
 				socket.emit('stream base vertices', vertices);
 				socket.emit('stream base indices', indices);
 
+				let x = 0;
+				
 				pmesh.vsplits.forEach(vs => {
+					//if(x === 0) {
 					vertices2.push(vs.vt_index);
 					for(let i = 0; i < 3; i++) {
 						vertices2.push(vs.vt_position[i])
@@ -124,7 +128,7 @@ class App {
 					vs.update.forEach(u => {
 						updates2.push(u);
 					});
-
+					//console.log(updates2);
 					socket.emit('vsplit vertices', vertices2);
 					socket.emit('vsplit indices', indices2);
 					socket.emit('vsplit updates', vs.vs_index, vs.vt_index, updates2);
@@ -132,6 +136,8 @@ class App {
 					vertices2 = [];
 					indices2 = [];
 					updates2 = [];
+					//x++;
+				//}
 				});
 			});
 		});

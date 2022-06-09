@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(12 * 3);
-const indices = new Array(20 * 3);
+const vertices = new Float32Array(500 * 3);
+const indices = new Array(500 * 3);
 let updates: number[];
 updates = [];
 let initialvertices = 0;
@@ -35,10 +35,10 @@ function onWindowResize() {
 }
 
 function buildMesh() {
-
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setIndex(indices)
 	const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+	//const material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe : true } );
 	mesh = new THREE.Mesh(geometry, material);
 	scene.add(mesh);
 	animate();
@@ -80,7 +80,6 @@ socket.on('stream base indices', (inds:number[]) => {
 		indices[inds[i]*3 + 1] = inds[i + 2];
 		indices[inds[i]*3 + 2] = inds[i + 3];
 	}
-
 	buildMesh();
 });
 socket.on('vsplit vertices', (verts:number[]) => {
@@ -94,6 +93,7 @@ socket.on('vsplit vertices', (verts:number[]) => {
 	//geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('vsplit indices', (inds:number[]) => {
+	console.log(inds[0], inds[4])
 	indices[inds[0]*3] = inds[0 + 1];
 	indices[inds[0]*3 + 1] = inds[0 + 2];
 	indices[inds[0]*3 + 2] = inds[0 + 3];
@@ -106,20 +106,21 @@ socket.on('vsplit indices', (inds:number[]) => {
 	//buildMesh();
 });
 socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
+	console.log(ups)
 	ups.forEach(u => {
 		if(indices[u*3] === vs) {
 			indices[u*3] = vt;
-			console.log('0')
+			console.log(u, '0')
 		} else if(indices[u*3 + 1] === vs) {
 			indices[u*3 + 1] = vt;
-			console.log('1')
+			console.log(u, '1')
 		} else if(indices[u*3 + 2] === vs) {
 			indices[u*3 + 2] = vt;
-			console.log('2')
+			console.log(u, '2')
 		}
 	});
-	console.log(indices);
 	buildMesh();
+	console.log(indices)
 	//mesh.geometry.setIndex(indices);
 	//mesh.geometry.index!.needsUpdate = true;
 });

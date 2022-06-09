@@ -323,7 +323,7 @@ export class PMesh {
 		let remaining: Vertex;
 		let i = 0;
 
-		while(this.current_nfaces >= 9) {
+		while(this.current_nfaces >= 12) {
 			let nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -332,11 +332,11 @@ export class PMesh {
 
 			this.ecol(nextVert, nextVert.ecolProspect);
 			i++;
-			this.verts.forEach(v => {
+			//this.verts.forEach(v => {
 				//if(v.rm === false) {
-				v.ecol_Error();
+				//v.ecol_Error();
 				//}
-			});
+			//});
 		}
 
 		this.basePositions = new Array(this.verts.length - i);
@@ -372,6 +372,7 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
+		console.log(vt.idx, vs.idx)
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
@@ -393,6 +394,7 @@ export class PMesh {
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f.idx === f2.idx) {
+					//if(f.rm === false) {
 					ftest.push(f.idx);
 					current_vsplit.new_faces[nf] = f.idx;
 					current_vsplit.new_faces[nf + 1] = f.halfedge!.vert!.idx;
@@ -400,38 +402,40 @@ export class PMesh {
 					current_vsplit.new_faces[nf + 3] = f.halfedge!.prev!.vert!.idx;
 					nf += 4;
 					
+
+					//test if 2 faces are always removed
+					//console.log(vt.idx, vs.idx)
+					//console.log(ftest)
+					
 					//mark face as removed
 					f.rm = true;
 					this.current_nfaces--;
+					//}
 				}
 			});
 		});
 
 		vt.faces(f => {
-			if(f.idx !== ftest[0] && f.idx !== ftest[1]) {
+			if(f.rm === false) {
 				current_vsplit.update.push(f.idx);
 			}
 		});
 	
-		//mark halfedges of collapsed faces as removed
-		vt.halfedges(h => {
-			if(h.next!.vert!.idx === vs.idx) {
-				h.next!.rm = true;
-				h.prev!.rm = true;
-				h.rm = true;
-			}
-		});
-		vs.halfedges(h => {
-			if(h.next!.vert!.idx === vt.idx) {
-				h.next!.rm = true;
-				h.prev!.rm = true;
-				h.rm = true;
-			}
+		vt.faces(f => {
+			vs.faces(f2 => {
+				if(f.idx === f2.idx) {
+					f.halfedge.rm = true;
+					f.halfedge.next.rm = true;
+					f.halfedge.prev.rm = true;
+				}
+			});
 		});
 
 		//update remaining halfedges
 		vt.halfedges(h => {
-			h.vert = vs;
+			if(h.rm === false) {
+				h.vert = vs;
+			}
 		});
 
 		//mark vt as removed
@@ -450,11 +454,18 @@ export class PMesh {
 	}
 
 	lowest_ecolError() {
-		let lowest = this.verts[0];
+		let lowest: Vertex;
+		this.verts.forEach(v => {
+			if(v.rm === false && v.ecolProspect && v.ecolError < 100000) {
+				lowest = v;
+			}
+		});
 
 		this.verts.forEach(v => {
 			//&& v.ecolError < 100000 && v.ecolProspect
-			if(v.ecolError < lowest.ecolError) {
+			if(!lowest && v.ecolProspect && v.ecolError < 100000) {
+				lowest = v;
+			} else if(v.ecolError < lowest.ecolError && v.ecolProspect && v.ecolError < 100000) {
 				lowest = v;
 			}
 		});
