@@ -4,6 +4,7 @@ import {Face} from "./face";
 
 export class Vertex {
 	rm: boolean;
+	manifold: boolean;
   position: Vector;
   halfedge?: Halfedge;
   uv?: Vector;
@@ -16,6 +17,7 @@ export class Vertex {
 
   constructor(position: Vector) {
 		this.rm = false;
+		this.manifold = true;
     this.position = position;
     this.idx = -1;
     //this.ecolError = -1;
@@ -79,6 +81,9 @@ export class Vertex {
     //average ecolError
 		//console.log(this.ecolError)
     this.ecolError = this.totalError / this.errorCount;
+		if(this.manifold === false) {
+			this.ecolError = 200000;
+		}
   }
 
   h_ecolError(h: Halfedge) {
@@ -96,7 +101,7 @@ export class Vertex {
         }
       });
     });
-/*
+
 		let max = 0; 
 		this.halfedges(h => {
 			this.halfedge.next!.vert!.halfedges(h2 => {
@@ -108,8 +113,8 @@ export class Vertex {
 
 		if(max !== 2) {
 			//console.log(max);
-			return 100000;
-		}*/
+			this.manifold = false;
+		}
     
     this.faces(f => {
       let minChange = 1;

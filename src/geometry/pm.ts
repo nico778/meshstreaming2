@@ -262,10 +262,6 @@ export class PMesh {
 			}
 		}
 
-		this.verts.forEach(v => {
-			v.ecol_Error();
-		});
-
     //update correct indices
     let index = 0;
     this.verts.forEach(v => {
@@ -283,6 +279,10 @@ export class PMesh {
     this.edges.forEach(e => {
       e.idx = index++;
     });
+
+		this.verts.forEach(v => {
+			v.ecol_Error();
+		});
 
 		this.full_nvertices = this.verts.length;
 		this.full_nfaces = this.faces.length;
@@ -323,7 +323,7 @@ export class PMesh {
 		let remaining: Vertex;
 		let i = 0;
 
-		while(this.current_nfaces >= 12) {
+		while(this.current_nfaces >= 6) {
 			let nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -332,11 +332,11 @@ export class PMesh {
 
 			this.ecol(nextVert, nextVert.ecolProspect);
 			i++;
-			//this.verts.forEach(v => {
-				//if(v.rm === false) {
-				//v.ecol_Error();
-				//}
-			//});
+			/*this.verts.forEach(v => {
+				if(v.rm === false) {
+				v.ecol_Error();
+				}
+			});*/
 		}
 
 		this.basePositions = new Array(this.verts.length - i);
@@ -358,7 +358,7 @@ export class PMesh {
 			}
 		});
 
-		console.log(this.vsplits)
+		//console.log(this.vsplits)
 	}
 
 	pm_rebuild() {
@@ -422,8 +422,8 @@ export class PMesh {
 				current_vsplit.update.push(f.idx);
 			}
 		});
-		console.log(current_vsplit.new_faces[0], current_vsplit.new_faces[5])
-		console.log(current_vsplit.update)
+		//console.log(current_vsplit.new_faces[0], current_vsplit.new_faces[5])
+		//console.log(current_vsplit.update)
 	
 		vt.faces(f => {
 			vs.faces(f2 => {
@@ -458,21 +458,28 @@ export class PMesh {
 	}
 
 	lowest_ecolError() {
-		let lowest: Vertex;
+		let lowest: Vertex
 		this.verts.forEach(v => {
-			if(v.rm === false && v.ecolProspect && v.ecolError < 100000) {
+			if(v.rm === false && !lowest) {
 				lowest = v;
 			}
 		});
 
 		this.verts.forEach(v => {
-			//&& v.ecolError < 100000 && v.ecolProspect
-			if(!lowest && v.ecolProspect && v.ecolError < 100000) {
-				lowest = v;
-			} else if(v.ecolError < lowest.ecolError && v.ecolProspect && v.ecolError < 100000) {
+			if(v.rm === false && v.ecolError < lowest.ecolError) {
 				lowest = v;
 			}
 		});
+
+		/*this.verts.forEach(v => {
+			//&& v.ecolError < 100000 && v.ecolProspect
+			if(!lowest && v.rm === false && v.ecolProspect && v.ecolError < 200000) {
+				lowest = v;
+				console.log('ever')
+			} else if(v.rm === false && v.ecolError < lowest.ecolError && v.ecolProspect && v.ecolError < 100000) {
+				lowest = v;
+			}
+		});*/
 		
 		return lowest;
 	}

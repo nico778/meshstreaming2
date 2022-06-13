@@ -39,7 +39,7 @@ class App {
 
 		this.server = new http.Server(app);
 
-		this.io = new Server(this.server);
+		this.io = new Server(this.server, {pingTimeout: 100000, maxHttpBufferSize: 1e12});
 
 		this.io.on('connection', (socket: Socket) => {
 			socket.on('request mesh', (msg: any) => {
@@ -115,9 +115,9 @@ class App {
 				socket.emit('stream base vertices', vertices);
 				socket.emit('stream base indices', indices);
 
-				//let x = pmesh.vsplits.length;
+				let x = pmesh.vsplits.length;
 				let vs: Vsplit
-				let x = 5
+				//let x = 5
 				while(x > 0) {
 					vs = pmesh.vsplits[x - 1];
 				//pmesh.vsplits.forEach(vs => {
@@ -142,6 +142,7 @@ class App {
 					updates2 = [];
 					x--;
 				}
+				//socket.emit('buildmesh');
 				//});
 			});
 		});

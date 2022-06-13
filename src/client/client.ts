@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(500 * 3);
-const indices = new Array(500 * 3);
+const vertices = new Float32Array(1000 * 3);
+const indices = new Uint16Array(1000 * 3);
 let updates: number[];
 updates = [];
 let initialvertices = 0;
@@ -23,7 +23,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 const gridHelper = new THREE.GridHelper(10, 10);
 gridHelper.position.y = -0.5;
 scene.add(gridHelper);
-let geometry = new THREE.BufferGeometry();
+const geometry = new THREE.BufferGeometry();
 
 
 window.addEventListener('resize', onWindowResize, false);
@@ -36,7 +36,7 @@ function onWindowResize() {
 
 function buildMesh() {
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setIndex(indices)
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 	const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
 	//const material = new THREE.MeshBasicMaterial( { color: 0x0000ff, wireframe : true } );
 	mesh = new THREE.Mesh(geometry, material);
@@ -86,50 +86,55 @@ socket.on('vsplit vertices', (verts:number[]) => {
 	vertices[verts[0]*3] = verts[0 + 1];
 	vertices[verts[0]*3 + 1] = verts[0 + 2];
 	vertices[verts[0]*3 + 2] = verts[0 + 3];
-
-	//mesh.geometry.attributes.position.needsUpdate = true;
-	//mesh.geometry.computeBoundingBox();
-	//mesh.geometry.computeBoundingSphere();
 	//geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('vsplit indices', (inds:number[]) => {
-	console.log(inds[0], inds[4])
+	//console.log(inds[0], inds[4])
 	indices[inds[0]*3] = inds[0 + 1];
 	indices[inds[0]*3 + 1] = inds[0 + 2];
 	indices[inds[0]*3 + 2] = inds[0 + 3];
-
 	indices[inds[4]*3] = inds[4 + 1];
 	indices[inds[4]*3 + 1] = inds[4 + 2];
 	indices[inds[4]*3 + 2] = inds[4 + 3];
+
 	
 	//mesh.geometry.attributes.index.needsUpdate = true;
 	//buildMesh();
 });
 socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
-	console.log(ups)
+	//console.log(ups)
 	ups.forEach(u => {
 		if(indices[u*3] === vs) {
 			indices[u*3] = vt;
-			console.log(u, '0')
+			//console.log(u, '0')
 		} else if(indices[u*3 + 1] === vs) {
 			indices[u*3 + 1] = vt;
-			console.log(u, '1')
+			//console.log(u, '1')
 		} else if(indices[u*3 + 2] === vs) {
 			indices[u*3 + 2] = vt;
-			console.log(u, '2')
+			//console.log(u, '2')
 		}
 	});
+	geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+	geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+	//geometry.index!.needsUpdate = true;
+	//geometry.attributes.position.needsUpdate = true;
+	//geometry.computeBoundingBox();
+	//geometry.computeBoundingSphere();
+	//geometry.computeVertexNormals();
+	//mesh = new THREE.Mesh(geometry);
+	//scene.add(mesh);
+});
+socket.on('buildmesh', function () {
 	buildMesh();
-	console.log(indices)
-	//mesh.geometry.setIndex(indices);
-	//mesh.geometry.index!.needsUpdate = true;
 });
+
  
-socket.on('update vertices', (vertices) => {
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+socket.on('update vertices', (verts) => {
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
 });
-socket.on('update indices', (indices) => {
-  geometry.setIndex(indices);
+socket.on('update indices', (inds) => {
+  geometry.setIndex(inds);
 });
 
 function startStreaming() {
@@ -198,6 +203,7 @@ gui
 const animate = function () {
 	requestAnimationFrame(animate);
 	controls.update();
+
 	render();
 }
 
