@@ -4,9 +4,6 @@ import http from 'http'
 import { Server, Socket } from 'socket.io'
 import * as fs from 'fs';
 import {PMesh} from '../geometry/pm';
-import {Vector} from '../geometry/vector';
-import * as events from 'events';
-import * as readline from 'readline';
 import { Vsplit } from '../geometry/vsplit';
 
 const port: number = 3000;
@@ -90,8 +87,6 @@ class App {
 			});
 
 			socket.on('request rebuild', () => {
-				//pmesh.pm_rebuild();
-
 				vertices = [];
 				indices = [];
 				vertices2 = [];
@@ -117,11 +112,9 @@ class App {
 
 				let x = pmesh.vsplits.length;
 				let vs: Vsplit
-				//let x = 5
 				while(x > 0) {
 					vs = pmesh.vsplits[x - 1];
-				//pmesh.vsplits.forEach(vs => {
-					//if(x === 0) {
+
 					vertices2.push(vs.vt_index);
 					for(let i = 0; i < 3; i++) {
 						vertices2.push(vs.vt_position[i])
@@ -132,7 +125,6 @@ class App {
 					vs.update.forEach(u => {
 						updates2.push(u);
 					});
-					//console.log(updates2);
 					socket.emit('vsplit vertices', vertices2);
 					socket.emit('vsplit indices', indices2);
 					socket.emit('vsplit updates', vs.vs_index, vs.vt_index, updates2);
@@ -142,8 +134,6 @@ class App {
 					updates2 = [];
 					x--;
 				}
-				//socket.emit('buildmesh');
-				//});
 			});
 		});
 	}

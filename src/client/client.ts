@@ -3,11 +3,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(1000 * 3);
-const indices = new Uint16Array(1000 * 3);
+const vertices = new Float32Array(200000 * 3);
+const indices = new Uint16Array(400000 * 3);
 let updates: number[];
 updates = [];
-let initialvertices = 0;
 let addPoint=0
 let check: number[];
 check = [];
@@ -35,6 +34,9 @@ function onWindowResize() {
 }
 
 function buildMesh() {
+	if(mesh !== null) {
+		scene.remove(mesh);
+	}
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
   geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 	const material = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
@@ -86,20 +88,14 @@ socket.on('vsplit vertices', (verts:number[]) => {
 	vertices[verts[0]*3] = verts[0 + 1];
 	vertices[verts[0]*3 + 1] = verts[0 + 2];
 	vertices[verts[0]*3 + 2] = verts[0 + 3];
-	//geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('vsplit indices', (inds:number[]) => {
-	//console.log(inds[0], inds[4])
 	indices[inds[0]*3] = inds[0 + 1];
 	indices[inds[0]*3 + 1] = inds[0 + 2];
 	indices[inds[0]*3 + 2] = inds[0 + 3];
 	indices[inds[4]*3] = inds[4 + 1];
 	indices[inds[4]*3 + 1] = inds[4 + 2];
 	indices[inds[4]*3 + 2] = inds[4 + 3];
-
-	
-	//mesh.geometry.attributes.index.needsUpdate = true;
-	//buildMesh();
 });
 socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
 	//console.log(ups)
@@ -117,16 +113,6 @@ socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
 	});
 	geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 	geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-	//geometry.index!.needsUpdate = true;
-	//geometry.attributes.position.needsUpdate = true;
-	//geometry.computeBoundingBox();
-	//geometry.computeBoundingSphere();
-	//geometry.computeVertexNormals();
-	//mesh = new THREE.Mesh(geometry);
-	//scene.add(mesh);
-});
-socket.on('buildmesh', function () {
-	buildMesh();
 });
 
  
@@ -139,12 +125,6 @@ socket.on('update indices', (inds) => {
 
 function startStreaming() {
 	var type = params.type;
-
-	/*if (mesh !== null) {
-			scene.remove(mesh);
-			vertices = [];
-			indices = [];
-		}*/
 	socket.emit('request mesh', type);
 }
 
@@ -162,10 +142,6 @@ function startRebuilding() {
 }
 
 const gui = new GUI();
-
-const cubeFolder = gui.addFolder('Mesh');
-//add list to select mesh
-const modelsFolder = gui.addFolder('Select Model');
 
 //add button to start mesh streaming
 var params = { 
@@ -203,7 +179,6 @@ gui
 const animate = function () {
 	requestAnimationFrame(animate);
 	controls.update();
-
 	render();
 }
 

@@ -5,7 +5,6 @@ import {Edge} from "./edge";
 import {Wedge} from "./wedge";
 import {Face} from "./face";
 import {Vsplit} from './vsplit';
-import * as fs from 'fs';
 
 export class PMesh {
   verts: Vertex[];
@@ -179,7 +178,6 @@ export class PMesh {
 					scnd = fst ^ scnd;
 					fst = fst ^ scnd;
 				}
-
         //store
 				let cH = String([fst, scnd]);
         //if an halfedge between current two vertices already exists
@@ -206,7 +204,6 @@ export class PMesh {
 		}
 
 		//create second half of boundary halfedges and virtual faces(within boundary cycle)
-		//also create and insert corners
 		let append = indices.length;
 		//loop over previously created halfedges(by looping over all indices)
 		for(let i = 0; i < indices.length; i++) {
@@ -216,7 +213,6 @@ export class PMesh {
 				//create virtual boundary face and add to boundary array
 				let f = new Face();
 				this.boundary.push(f);
-
 				//boundary round
 				let addition = h;
 				let counter = 0;
@@ -289,33 +285,10 @@ export class PMesh {
 		this.current_nvertices = this.verts.length;
 		this.current_nfaces = this.faces.length;
 
-    //console.log(this.verts.length);
-    //console.log(this.faces.length);
+    console.log(this.verts.length);
+    console.log(this.faces.length);
     //console.log(this.halfedges.length);
     //console.log(this.edges.length);
-  }
-
-  //apply vsplit
-  pmIteratorNext() {
-    return new Vector();
-  } 
-  //apply ecol
-  pmIteratorPrev() {
-    return new Vector();
-  }
-  //go to specified # of vertices/faces
-  pmIteratorgoto(goal_nvertices: number, goal_nfaces: number) {
-    return new Vector();
-  }
-  pmIteratorNextAncestor() {
-  }
-
-  geomorph(vertsGoal: number, facesGoal: number, pmIter: PMesh, 
-    Type: String, int: Number) {
-  }
-  //interpolate its vertex and wedge attributes between the pair of end states
-  //takes parameter 0 <= alpha <= 1
-  geo_evaluate(alpha: number) {
   }
 
 	pm_simplify() {
@@ -323,7 +296,7 @@ export class PMesh {
 		let remaining: Vertex;
 		let i = 0;
 
-		while(this.current_nfaces >= 6) {
+		while(this.current_nfaces >= 100) {
 			let nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -357,20 +330,6 @@ export class PMesh {
 				fi++;
 			}
 		});
-
-		//console.log(this.vsplits)
-	}
-
-	pm_rebuild() {
-		
-	}
-
-	startSequence() {
-
-	}
-
-	vsplit() {
-
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
@@ -403,11 +362,6 @@ export class PMesh {
 					current_vsplit.new_faces[nf + 2] = f.halfedge!.next!.vert!.idx;
 					current_vsplit.new_faces[nf + 3] = f.halfedge!.prev!.vert!.idx;
 					nf += 4;
-					
-
-					//test if 2 faces are always removed
-					//console.log(vt.idx, vs.idx)
-					//console.log(ftest)
 					
 					//mark face as removed
 					f.rm = true;

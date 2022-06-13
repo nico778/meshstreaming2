@@ -112,7 +112,6 @@ export class Vertex {
 		})
 
 		if(max !== 2) {
-			//console.log(max);
 			this.manifold = false;
 		}
     
