@@ -296,7 +296,7 @@ export class PMesh {
 		let remaining: Vertex;
 		let i = 0;
 
-		while(this.current_nfaces >= 100) {
+		while(this.current_nfaces >= 300) {
 			let nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -305,11 +305,6 @@ export class PMesh {
 
 			this.ecol(nextVert, nextVert.ecolProspect);
 			i++;
-			/*this.verts.forEach(v => {
-				if(v.rm === false) {
-				v.ecol_Error();
-				}
-			});*/
 		}
 
 		this.basePositions = new Array(this.verts.length - i);
@@ -345,11 +340,15 @@ export class PMesh {
 		//get area on mesh for later update
 		let area: Vertex[] = [];
 		vt.halfedges(h => {
-			area.push(h.next!.vert!);
+			//if(h.rm === false) {
+				area.push(h.next!.vert!);
+			//}
 		});
-
+		
 		let ftest: number[];
+		let updfaces: number[];
 		ftest = [];
+		updfaces = [];
 		let nf = 0;
 		//delete the 2 collapsed faces on edge vtvs
 		vt.faces(f => {
@@ -367,15 +366,25 @@ export class PMesh {
 					f.rm = true;
 					this.current_nfaces--;
 					//}
+				} else {
+					if(!updfaces.includes(f.idx)) {
+						updfaces.push(f.idx)
+					}
 				}
 			});
 		});
 
 		vt.faces(f => {
 			if(f.rm === false) {
+				console.log('fupd')
 				current_vsplit.update.push(f.idx);
 			}
 		});
+
+		/*updfaces.forEach(f => {
+			current_vsplit.update.push(f);
+		});*/
+		
 		//console.log(current_vsplit.new_faces[0], current_vsplit.new_faces[5])
 		//console.log(current_vsplit.update)
 	
@@ -389,38 +398,44 @@ export class PMesh {
 			});
 		});
 
+		ftest.forEach(fi => {
+			this.faces[fi].rm = true;
+		})
+
 		//update remaining halfedges
 		vt.halfedges(h => {
 			if(h.rm === false) {
 				h.vert = vs;
 			}
-		});
-
+		})
+		
 		//mark vt as removed
 		vt.rm = true;
-		vt.ecolError = 100000
-		vt.ecolProspect = null
-		vt.minError = 100000
+		//vt.ecolError = 100000
+		//vt.ecolProspect = null
+		//vt.minError = 100000
 		this.current_nvertices--;
 
 		this.vsplits.push(current_vsplit);
-		
+		//console.log(area)
 		//ecol error update in affected area
 		area.forEach(v => {
+			//if(v.rm === false) {
 			v.ecol_Error();
+			//}
 		});
 	}
 
 	lowest_ecolError() {
 		let lowest: Vertex
 		this.verts.forEach(v => {
-			if(v.rm === false && !lowest) {
+			if(v.rm === false && v.ecolProspect && !lowest) {
 				lowest = v;
 			}
 		});
 
 		this.verts.forEach(v => {
-			if(v.rm === false && v.ecolError < lowest.ecolError) {
+			if(v.rm === false && v.ecolProspect && v.ecolError < lowest.ecolError) {
 				lowest = v;
 			}
 		});

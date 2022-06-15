@@ -1,7 +1,7 @@
 export function approxEqual(v1: number, v2: number, epsilon = 1e-7): boolean {
   return Math.abs(v1 - v2) <= epsilon;
 }
- 
+
 export class Vector {
   x: number;
   y: number;

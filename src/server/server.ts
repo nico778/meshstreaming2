@@ -71,12 +71,14 @@ class App {
 				vertices = [];
 				indices = [];                                                                                  
 
-				pmesh.verts.forEach(v => {
-					vertices.push(v.position.x);
-					vertices.push(v.position.y);
-					vertices.push(v.position.z);
+				pmesh.basePositions.forEach(v => {
+					vertices.push(v)
+					vertices.push(pmesh.verts[v].position.x);
+					vertices.push(pmesh.verts[v].position.y);
+					vertices.push(pmesh.verts[v].position.z);
 				});
 				pmesh.baseIndices.forEach(i => {
+					indices.push(i)
 					indices.push(pmesh.faces[i].halfedge!.vert!.idx);
 					indices.push(pmesh.faces[i].halfedge!.next!.vert!.idx);
 					indices.push(pmesh.faces[i].halfedge!.prev!.vert!.idx);

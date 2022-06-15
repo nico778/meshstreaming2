@@ -20,7 +20,7 @@ export class Vertex {
 		this.manifold = true;
     this.position = position;
     this.idx = -1;
-    //this.ecolError = -1;
+    this.ecolError = 0;
     //this.minError = -1;
     //this.totalError = -1;
     //this.errorCount = -1;
@@ -35,7 +35,7 @@ export class Vertex {
     let start = true;
     let i = 0;
     for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.next) {
-      fn(h!, i);
+			fn(h!, i);
       start = false;
       i++;
     }
@@ -79,11 +79,10 @@ export class Vertex {
     });
 
     //average ecolError
-		//console.log(this.ecolError)
     this.ecolError = this.totalError / this.errorCount;
-		if(this.manifold === false) {
+		/*if(this.manifold === false) {
 			this.ecolError = 200000;
-		}
+		}*/
   }
 
   h_ecolError(h: Halfedge) {
@@ -110,20 +109,28 @@ export class Vertex {
 				}
 			})
 		})
-
-		if(max !== 2) {
-			this.manifold = false;
-		}
     
     this.faces(f => {
       let minChange = 1;
 
 			incidentFaces.forEach(i => {
-				minChange = Math.min(minChange, (1.001 - (f.normal().dot(i.normal()))) / 2);
+				minChange = Math.min(minChange, (1 - (f.normal().dot(i.normal()))) / 2);
 			});
 
 			change = Math.max(change, minChange);
+		//}
     });
+
+		if(max < 2) {
+			//console.log(max)
+			//change = 1
+		}
+
+		if(max > 2) {
+			//console.log(max)
+			//change = 1
+		}
+
     return heLen * change;
   }
 }

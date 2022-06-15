@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(200000 * 3);
-const indices = new Uint16Array(400000 * 3);
+const vertices = new Float32Array(2000 * 3);
+const indices = new Uint32Array(4000 * 3);
 let updates: number[];
 updates = [];
 let addPoint=0
@@ -117,10 +117,24 @@ socket.on('vsplit updates', (vs:number, vt:number, ups:number[]) => {
 
  
 socket.on('update vertices', (verts) => {
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+	vertices.fill(0);
+	indices.fill(0);
+	
+	for(let i = 0; i < verts.length; i+=4) {
+		vertices[verts[i]*3] = verts[i + 1];
+		vertices[verts[i]*3 + 1] = verts[i + 2];
+		vertices[verts[i]*3 + 2] = verts[i + 3];
+	}
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
 });
 socket.on('update indices', (inds) => {
-  geometry.setIndex(inds);
+	for(let i = 0; i < inds.length; i+=4) {
+		indices[inds[i]*3] = inds[i + 1];
+		indices[inds[i]*3 + 1] = inds[i + 2];
+		indices[inds[i]*3 + 2] = inds[i + 3];
+	}
+  //geometry.setIndex(inds);
+	geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 });
 
 function startStreaming() {
