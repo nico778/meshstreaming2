@@ -80,9 +80,6 @@ export class Vertex {
 
     //average ecolError
     this.ecolError = this.totalError / this.errorCount;
-		/*if(this.manifold === false) {
-			this.ecolError = 200000;
-		}*/
   }
 
   h_ecolError(h: Halfedge) {
@@ -118,7 +115,6 @@ export class Vertex {
 			});
 
 			change = Math.max(change, minChange);
-		//}
     });
 
 		if(max < 2) {

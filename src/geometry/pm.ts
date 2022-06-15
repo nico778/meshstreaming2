@@ -292,8 +292,6 @@ export class PMesh {
   }
 
 	pm_simplify() {
-		//let nextVert: Vertex;
-		let remaining: Vertex;
 		let i = 0;
 
 		while(this.current_nfaces >= 300) {
@@ -340,9 +338,7 @@ export class PMesh {
 		//get area on mesh for later update
 		let area: Vertex[] = [];
 		vt.halfedges(h => {
-			//if(h.rm === false) {
-				area.push(h.next!.vert!);
-			//}
+			area.push(h.next!.vert!);
 		});
 		
 		let ftest: number[];
@@ -354,7 +350,6 @@ export class PMesh {
 		vt.faces(f => {
 			vs.faces(f2 => {
 				if(f.idx === f2.idx) {
-					//if(f.rm === false) {
 					ftest.push(f.idx);
 					current_vsplit.new_faces[nf] = f.idx;
 					current_vsplit.new_faces[nf + 1] = f.halfedge!.vert!.idx;
@@ -365,7 +360,6 @@ export class PMesh {
 					//mark face as removed
 					f.rm = true;
 					this.current_nfaces--;
-					//}
 				} else {
 					if(!updfaces.includes(f.idx)) {
 						updfaces.push(f.idx)
@@ -380,13 +374,6 @@ export class PMesh {
 				current_vsplit.update.push(f.idx);
 			}
 		});
-
-		/*updfaces.forEach(f => {
-			current_vsplit.update.push(f);
-		});*/
-		
-		//console.log(current_vsplit.new_faces[0], current_vsplit.new_faces[5])
-		//console.log(current_vsplit.update)
 	
 		vt.faces(f => {
 			vs.faces(f2 => {
@@ -411,18 +398,13 @@ export class PMesh {
 		
 		//mark vt as removed
 		vt.rm = true;
-		//vt.ecolError = 100000
-		//vt.ecolProspect = null
-		//vt.minError = 100000
 		this.current_nvertices--;
 
 		this.vsplits.push(current_vsplit);
-		//console.log(area)
+		
 		//ecol error update in affected area
 		area.forEach(v => {
-			//if(v.rm === false) {
 			v.ecol_Error();
-			//}
 		});
 	}
 
@@ -439,16 +421,6 @@ export class PMesh {
 				lowest = v;
 			}
 		});
-
-		/*this.verts.forEach(v => {
-			//&& v.ecolError < 100000 && v.ecolProspect
-			if(!lowest && v.rm === false && v.ecolProspect && v.ecolError < 200000) {
-				lowest = v;
-				console.log('ever')
-			} else if(v.rm === false && v.ecolError < lowest.ecolError && v.ecolProspect && v.ecolError < 100000) {
-				lowest = v;
-			}
-		});*/
 		
 		return lowest;
 	}
