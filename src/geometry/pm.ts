@@ -293,15 +293,16 @@ export class PMesh {
 
 	pm_simplify() {
 		let i = 0;
+		let nextVert: Vertex
 
 		while(this.current_nfaces >= 300) {
-			let nextVert = this.lowest_ecolError();
+			nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
 				break;
 			}
 
-			this.ecol(nextVert, nextVert.ecolProspect);
+			this.ecol(nextVert, nextVert.ecolProspect, nextVert.ecolHalfedge);
 			i++;
 		}
 
@@ -325,8 +326,9 @@ export class PMesh {
 		});
 	}
 
-	ecol(vt: Vertex, vs: Vertex) {
+	ecol(vt: Vertex, vs: Vertex, he: Halfedge) {
 		console.log(vt.idx, vs.idx)
+		let vsh = he!.prev!.twin;
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
@@ -337,45 +339,45 @@ export class PMesh {
 
 		//get area on mesh for later update
 		let area: Vertex[] = [];
-		vt.halfedges(h => {
-			area.push(h.next!.vert!);
-		});
+		console.log(1001)
+		//vt.halfedges(h => {
+			//area.push(h!.next!.vert);
+		//});
 		
-		let ftest: number[];
-		let updfaces: number[];
-		ftest = [];
-		updfaces = [];
-		let nf = 0;
 		//delete the 2 collapsed faces on edge vtvs
-		vt.faces(f => {
-			vs.faces(f2 => {
-				if(f.idx === f2.idx) {
-					ftest.push(f.idx);
-					current_vsplit.new_faces[nf] = f.idx;
-					current_vsplit.new_faces[nf + 1] = f.halfedge!.vert!.idx;
-					current_vsplit.new_faces[nf + 2] = f.halfedge!.next!.vert!.idx;
-					current_vsplit.new_faces[nf + 3] = f.halfedge!.prev!.vert!.idx;
-					nf += 4;
-					
-					//mark face as removed
-					f.rm = true;
-					this.current_nfaces--;
-				} else {
-					if(!updfaces.includes(f.idx)) {
-						updfaces.push(f.idx)
-					}
-				}
-			});
-		});
+		console.log(1002)
+		
+		current_vsplit.new_faces[0] = he!.face!.idx;
+		current_vsplit.new_faces[1] = he!.vert!.idx;
+		current_vsplit.new_faces[2] = he!.next!.vert!.idx;
+		current_vsplit.new_faces[3] = he!.prev!.vert!.idx;
 
-		vt.faces(f => {
+		current_vsplit.new_faces[4] = he!.twin!.face!.idx;
+		current_vsplit.new_faces[5] = he!.twin!.vert!.idx;
+		current_vsplit.new_faces[6] = he!.twin!.next!.vert!.idx;
+		current_vsplit.new_faces[7] = he!.twin!.prev!.vert!.idx;
+		
+		//mark face as removed
+		he!.face!.rm = true;
+		he!.twin!.face!.rm = true;
+		this.current_nfaces-=2;
+			
+		console.log(1003)
+		let updfaces: number[] = []
+		/*vt.faces(f => {
 			if(f.rm === false) {
-				console.log('fupd')
+				//console.log('fupd')
+				updfaces.push(f.idx)
 				current_vsplit.update.push(f.idx);
 			}
-		});
+		});*/
+
+		for(let h = he!.prev!.twin; h.face!.rm === true; h = h!.prev!.twin) {
+			updfaces.push(h!.face!.idx)
+			current_vsplit.update.push(h!.face!.idx);
+		}
 	
-		vt.faces(f => {
+		/*vt.faces(f => {
 			vs.faces(f2 => {
 				if(f.idx === f2.idx) {
 					f.halfedge.rm = true;
@@ -383,28 +385,49 @@ export class PMesh {
 					f.halfedge.prev.rm = true;
 				}
 			});
-		});
+		});*/
+		he.rm = true
+		he!.next!.rm = true
+		he!.prev!.rm = true
 
-		ftest.forEach(fi => {
-			this.faces[fi].rm = true;
-		})
+		he!.twin!.rm = true
+		he!.twin!.next!.rm = true
+		he!.twin!.prev!.rm = true
+
+
+		//update twins of first collapsed face
+		he!.prev!.twin!.twin = he!.next!.twin
+		he!.next!.twin!.twin = he!.prev!.twin
+
+		//update twins of second collapsed face
+		he!.twin!.next!.twin!.twin = he!.twin!.prev!.twin
+		he!.twin!.prev!.twin!.twin = he!.twin!.next!.twin
 
 		//update remaining halfedges
-		vt.halfedges(h => {
-			if(h.rm === false) {
-				h.vert = vs;
+		console.log(1004)
+		updfaces.forEach(f => {
+			if(this.faces[f].halfedge!.vert!.idx === vt.idx) {
+				this.faces[f].halfedge!.vert = vs;
+			} else if(this.faces[f].halfedge!.next!.vert!.idx === vt.idx) {
+				this.faces[f].halfedge!.next!.vert = vs;
+			} else if(this.faces[f].halfedge!.prev!.vert!.idx === vt.idx) {
+				this.faces[f].halfedge!.prev!.vert = vs;
 			}
 		})
 		
 		//mark vt as removed
 		vt.rm = true;
+		//update vs
+		vs.halfedge = vsh;
 		this.current_nvertices--;
 
 		this.vsplits.push(current_vsplit);
 		
 		//ecol error update in affected area
-		area.forEach(v => {
-			v.ecol_Error();
+		this.verts.forEach(v => {
+			if(v.rm === false) {
+				v.ecol_Error();
+			}
 		});
 	}
 

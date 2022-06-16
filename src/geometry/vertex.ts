@@ -11,6 +11,7 @@ export class Vertex {
   idx: number;
   ecolError: number;
   ecolProspect: Vertex;
+	ecolHalfedge: Halfedge;
   minError: number;
   totalError: number;
   errorCount: number;
@@ -56,7 +57,6 @@ export class Vertex {
 
   ecol_Error() {
     this.ecolError = 100000;
-
     //find the outgoing halfedge with the lowest cost 
     this.halfedges(h => {
       let ecolError = this.h_ecolError(h);
@@ -65,6 +65,7 @@ export class Vertex {
         this.ecolError = ecolError;
         this.minError = ecolError;
         this.ecolProspect = h.next!.vert;
+				this.ecolHalfedge = h.next!;
         this.totalError = 0;
         this.errorCount = 0;
       }
@@ -74,6 +75,7 @@ export class Vertex {
 
       if(ecolError < this.minError) {
         this.ecolProspect = h.next!.vert;
+				this.ecolHalfedge = h.next!;
         this.minError = ecolError;
       }
     });
@@ -123,8 +125,8 @@ export class Vertex {
 		}
 
 		if(max > 2) {
-			//console.log(max)
-			//change = 1
+			console.log('non-manifold ecol')
+			change = 100
 		}
 
     return heLen * change;
