@@ -35,7 +35,7 @@ export class Vertex {
   halfedges(fn: (h: Halfedge, i: number) => void) {
     let start = true;
     let i = 0;
-    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.next) {
+    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.prev) {
 			fn(h!, i);
       start = false;
       i++;
@@ -45,10 +45,10 @@ export class Vertex {
   faces(fn: (f: Face, i: number) => void) {
     let start = true;
     let i = 0;
-    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.next) {
-      if(h!.onBoundary) {
-        continue;
-      }
+    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.prev) {
+			if(h!.onBoundary) {
+				continue;
+			} 
       fn(h!.face!, i);
       start = false;
       i++;
@@ -57,8 +57,10 @@ export class Vertex {
 
   ecol_Error() {
     this.ecolError = 100000;
+		
     //find the outgoing halfedge with the lowest cost 
     this.halfedges(h => {
+			
       let ecolError = this.h_ecolError(h);
       //no prospect for ecol found yet
       if(!this.ecolProspect) {
@@ -90,45 +92,44 @@ export class Vertex {
     //select face with biggest distance from those two faces
     let heLen = h.vector().norm();
     let change = 0;
-		let incidentFaces = [];
+		let incidentFaces: Face[] = [];
+		let vs = h!.next!.vert;
 
-		this.faces(f => {
-      h.next!.vert!.faces(f2 => {
-        if(f.idx === f2.idx) {
-          incidentFaces.push(f);
-        }
-      });
-    });
 
+		incidentFaces.push(h!.face);
+		incidentFaces.push(h!.twin!.face);
+		
 		let max = 0; 
 		this.halfedges(h => {
-			this.halfedge.next!.vert!.halfedges(h2 => {
+			vs.halfedges(h2 => {
 				if(h.next!.vert!.idx === h2.next!.vert!.idx) {
 					max++;
 				}
 			})
 		})
     
-    this.faces(f => {
-      let minChange = 1;
+		
+    this.faces(f => { 
+
+			if(f.idx !== incidentFaces[0].idx || f.idx !== incidentFaces[0].idx) {
+
+				let minChange = 1; 
 
 			incidentFaces.forEach(i => {
+				
 				minChange = Math.min(minChange, (1 - (f.normal().dot(i.normal()))) / 2);
 			});
 
 			change = Math.max(change, minChange);
+
+		}
     });
 
-		if(max < 2) {
-			//console.log(max)
-			//change = 1
-		}
+		if(max !== 2) {
 
-		if(max > 2) {
-			console.log('non-manifold ecol')
-			change = 100
+			change = 1
 		}
-
+		
     return heLen * change;
   }
 }

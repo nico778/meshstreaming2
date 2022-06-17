@@ -324,11 +324,19 @@ export class PMesh {
 				fi++;
 			}
 		});
+		console.log('done')
 	}
 
 	ecol(vt: Vertex, vs: Vertex, he: Halfedge) {
 		console.log(vt.idx, vs.idx)
-		let vsh = he!.prev!.twin;
+		//for vs halfedge repair
+		let vsh = he!.next!.twin!.next.idx;
+		//for face1vertex halfedge repair
+		let f1vh = he!.next!.twin.idx;
+		let f1vidx = he!.next!.twin!.vert!.idx;
+		//for face2vertex halfedge repair
+		let f2vh = he!.twin!.prev!.twin!.next.idx;
+		let f2vidx = he!.twin!.prev!.twin!.next!.vert!.idx;
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
@@ -339,13 +347,13 @@ export class PMesh {
 
 		//get area on mesh for later update
 		let area: Vertex[] = [];
-		console.log(1001)
+		
 		//vt.halfedges(h => {
 			//area.push(h!.next!.vert);
 		//});
 		
 		//delete the 2 collapsed faces on edge vtvs
-		console.log(1002)
+		
 		
 		current_vsplit.new_faces[0] = he!.face!.idx;
 		current_vsplit.new_faces[1] = he!.vert!.idx;
@@ -362,7 +370,7 @@ export class PMesh {
 		he!.twin!.face!.rm = true;
 		this.current_nfaces-=2;
 			
-		console.log(1003)
+		
 		let updfaces: number[] = []
 		/*vt.faces(f => {
 			if(f.rm === false) {
@@ -386,14 +394,6 @@ export class PMesh {
 				}
 			});
 		});*/
-		he.rm = true
-		he!.next!.rm = true
-		he!.prev!.rm = true
-
-		he!.twin!.rm = true
-		he!.twin!.next!.rm = true
-		he!.twin!.prev!.rm = true
-
 
 		//update twins of first collapsed face
 		he!.prev!.twin!.twin = he!.next!.twin
@@ -403,8 +403,23 @@ export class PMesh {
 		he!.twin!.next!.twin!.twin = he!.twin!.prev!.twin
 		he!.twin!.prev!.twin!.twin = he!.twin!.next!.twin
 
+
+		he.rm = true
+		he!.next!.rm = true
+		he!.prev!.rm = true
+		he!.twin!.rm = true
+		he!.twin!.next!.rm = true
+		he!.twin!.prev!.rm = true
+
+		/*he!.twin!.twin = he!.twin
+		he!.twin!.next!.twin = he!.twin!.next
+		he!.twin!.prev!.twin = he!.twin!.prev
+		he!.twin = he
+		he!.next!.twin = he!.next
+		he!.prev!.twin = he!.prev*/
+
 		//update remaining halfedges
-		console.log(1004)
+		
 		updfaces.forEach(f => {
 			if(this.faces[f].halfedge!.vert!.idx === vt.idx) {
 				this.faces[f].halfedge!.vert = vs;
@@ -417,18 +432,23 @@ export class PMesh {
 		
 		//mark vt as removed
 		vt.rm = true;
+		
 		//update vs
-		vs.halfedge = vsh;
+		vs.halfedge = this.halfedges[vsh];
+		//update f1v
+		this.verts[f1vidx].halfedge = this.halfedges[f1vh];
+		//update f2v
+		this.verts[f2vidx].halfedge = this.halfedges[f2vh];
+
 		this.current_nvertices--;
 
-		this.vsplits.push(current_vsplit);
+		this.vsplits.push(current_vsplit); 
 		
 		//ecol error update in affected area
-		this.verts.forEach(v => {
-			if(v.rm === false) {
-				v.ecol_Error();
-			}
-		});
+		vs.halfedges(h => {
+			//console.log('update')
+			h!.next!.vert.ecol_Error();
+		})
 	}
 
 	lowest_ecolError() {
