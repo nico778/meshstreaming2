@@ -36,7 +36,7 @@ class App {
 
 		this.server = new http.Server(app);
 
-		this.io = new Server(this.server, {pingTimeout: 100000, maxHttpBufferSize: 1e12});
+		this.io = new Server(this.server, {pingTimeout: 1000000, maxHttpBufferSize: 1e12});
 
 		this.io.on('connection', (socket: Socket) => {
 			socket.on('request mesh', (msg: any) => {

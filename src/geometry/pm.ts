@@ -333,7 +333,7 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex) {
-		console.log(vt.idx, vs.idx)
+		//console.log(vt.idx, vs.idx)
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
@@ -406,9 +406,9 @@ export class PMesh {
 		this.vsplits.push(current_vsplit);
 		
 		//ecol error update in affected area
-		area.forEach(v => {
+		/*area.forEach(v => {
 			v.ecol_Error();
-		});
+		});*/
 	}
 
 	lowest_ecolError() {
