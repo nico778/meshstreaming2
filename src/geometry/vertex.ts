@@ -35,7 +35,7 @@ export class Vertex {
   halfedges(fn: (h: Halfedge, i: number) => void) {
     let start = true;
     let i = 0;
-    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.prev) {
+    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.next) {
 			fn(h!, i);
       start = false;
       i++;
@@ -45,7 +45,7 @@ export class Vertex {
   faces(fn: (f: Face, i: number) => void) {
     let start = true;
     let i = 0;
-    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.prev) {
+    for(let h = this.halfedge; start || h !== this.halfedge; h = h!.twin!.next) {
 			if(h!.onBoundary) {
 				continue;
 			} 
@@ -67,7 +67,7 @@ export class Vertex {
         this.ecolError = ecolError;
         this.minError = ecolError;
         this.ecolProspect = h.next!.vert;
-				this.ecolHalfedge = h.next!;
+				this.ecolHalfedge = h;
         this.totalError = 0;
         this.errorCount = 0;
       }
@@ -77,7 +77,7 @@ export class Vertex {
 
       if(ecolError < this.minError) {
         this.ecolProspect = h.next!.vert;
-				this.ecolHalfedge = h.next!;
+				this.ecolHalfedge = h;
         this.minError = ecolError;
       }
     });
@@ -92,33 +92,29 @@ export class Vertex {
     //select face with biggest distance from those two faces
     let heLen = h.vector().norm();
     let change = 0;
-		let incidentFaces: Face[] = [];
-		let vs = h!.next!.vert;
-
+		let incidentFaces = []; 
 
 		incidentFaces.push(h!.face);
 		incidentFaces.push(h!.twin!.face);
 		
 		let max = 0; 
 		this.halfedges(h => {
-			vs.halfedges(h2 => {
+			this.halfedge!.next!.vert.halfedges(h2 => {
 				if(h.next!.vert!.idx === h2.next!.vert!.idx) {
 					max++;
 				}
 			})
 		})
     
-		
     this.faces(f => { 
 
-			if(f.idx !== incidentFaces[0].idx || f.idx !== incidentFaces[0].idx) {
+			if(f.idx !== incidentFaces[0].idx || f.idx !== incidentFaces[1].idx) {
 
-				let minChange = 1; 
+				let minChange = 1;
 
-			incidentFaces.forEach(i => {
-				
-				minChange = Math.min(minChange, (1 - (f.normal().dot(i.normal()))) / 2);
-			});
+				incidentFaces.forEach(i => {
+					minChange = Math.min(minChange, (1 - (f.normal().dot(i.normal()))) / 2);
+				});
 
 			change = Math.max(change, minChange);
 

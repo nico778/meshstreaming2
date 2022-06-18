@@ -3,8 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { GUI } from 'dat.gui'
 import { io } from 'socket.io-client'
 
-const vertices = new Float32Array(200000 * 3);
-const indices = new Uint32Array(400000 * 3);
+const vertices = new Float32Array(20000 * 3);
+const indices = new Uint32Array(40000 * 3);
 let updates: number[];
 updates = [];
 let addPoint=0

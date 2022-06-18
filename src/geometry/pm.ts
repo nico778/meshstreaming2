@@ -295,7 +295,7 @@ export class PMesh {
 		let i = 0;
 		let nextVert: Vertex
 
-		while(this.current_nfaces >= 300) {
+		while(this.current_nfaces >= 300) { 
 			nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -305,7 +305,7 @@ export class PMesh {
 			this.ecol(nextVert, nextVert.ecolProspect, nextVert.ecolHalfedge);
 			i++;
 		}
-
+		console.log('done')
 		this.basePositions = new Array(this.verts.length - i);
 		this.baseIndices = new Array(this.faces.length*3 - (i*2));
 
@@ -324,11 +324,10 @@ export class PMesh {
 				fi++;
 			}
 		});
-		console.log('done')
 	}
 
 	ecol(vt: Vertex, vs: Vertex, he: Halfedge) {
-		console.log(vt.idx, vs.idx)
+		//console.log(vt.idx, vs.idx)
 		//for vs halfedge repair
 		let vsh = he!.next!.twin!.next.idx;
 		//for face1vertex halfedge repair
@@ -340,13 +339,12 @@ export class PMesh {
 
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
-		current_vsplit.vt_index = vt.idx;
+		current_vsplit.vt_index = vt.idx;																																										
 		current_vsplit.vt_position[0] = this.verts[vt.idx].position.x;
 		current_vsplit.vt_position[1] = this.verts[vt.idx].position.y;
 		current_vsplit.vt_position[2] = this.verts[vt.idx].position.z;
 
 		//get area on mesh for later update
-		let area: Vertex[] = [];
 		
 		//vt.halfedges(h => {
 			//area.push(h!.next!.vert);
@@ -370,20 +368,20 @@ export class PMesh {
 		he!.twin!.face!.rm = true;
 		this.current_nfaces-=2;
 			
-		
-		let updfaces: number[] = []
-		/*vt.faces(f => {
+		console.log(1000)
+		let updfaces = []
+		vt.faces(f => {
 			if(f.rm === false) {
 				//console.log('fupd')
 				updfaces.push(f.idx)
 				current_vsplit.update.push(f.idx);
 			}
-		});*/
-
-		for(let h = he!.prev!.twin; h.face!.rm === true; h = h!.prev!.twin) {
+		});
+		/*
+		for(let h = he!.prev!.twin; h !== he || h!.face!.rm === true; h = h!.prev!.twin) {
 			updfaces.push(h!.face!.idx)
 			current_vsplit.update.push(h!.face!.idx);
-		}
+		}*/
 	
 		/*vt.faces(f => {
 			vs.faces(f2 => {
@@ -419,7 +417,7 @@ export class PMesh {
 		he!.prev!.twin = he!.prev*/
 
 		//update remaining halfedges
-		
+		//console.log(1001) 
 		updfaces.forEach(f => {
 			if(this.faces[f].halfedge!.vert!.idx === vt.idx) {
 				this.faces[f].halfedge!.vert = vs;
@@ -445,10 +443,10 @@ export class PMesh {
 		this.vsplits.push(current_vsplit); 
 		
 		//ecol error update in affected area
-		vs.halfedges(h => {
+		/*vs.halfedges(h => {
 			//console.log('update')
 			h!.next!.vert.ecol_Error();
-		})
+		})*/
 	}
 
 	lowest_ecolError() {
