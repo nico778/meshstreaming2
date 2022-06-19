@@ -276,9 +276,9 @@ export class PMesh {
       e.idx = index++;
     });
 
-		/*this.verts.forEach(v => {
+		this.verts.forEach(v => {
 			v.ecol_Error();
-		});*/
+		});
 
 		this.full_nvertices = this.verts.length;
 		this.full_nfaces = this.faces.length;
