@@ -276,9 +276,9 @@ export class PMesh {
       e.idx = index++;
     });
 
-		this.verts.forEach(v => {
+		/*this.verts.forEach(v => {
 			v.ecol_Error();
-		});
+		});*/
 
 		this.full_nvertices = this.verts.length;
 		this.full_nfaces = this.faces.length;
@@ -294,9 +294,9 @@ export class PMesh {
 	pm_simplify() {
 		//let nextVert: Vertex;
 		let remaining: Vertex;
-		let i = 0;
+		let i = 0; 
 
-		while(this.current_nfaces >= 100) {
+		while(this.current_nfaces >= 2000) {
 			let nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -406,9 +406,9 @@ export class PMesh {
 		this.vsplits.push(current_vsplit);
 		
 		//ecol error update in affected area
-		/*area.forEach(v => {
+		area.forEach(v => {
 			v.ecol_Error();
-		});*/
+		});
 	}
 
 	lowest_ecolError() {

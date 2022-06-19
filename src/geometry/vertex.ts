@@ -119,7 +119,7 @@ export class Vertex {
       let minChange = 1;
 
 			incidentFaces.forEach(i => {
-				minChange = Math.min(minChange, (1.001 - (f.normal().dot(i.normal()))) / 2);
+				minChange = Math.min(minChange, (1 - (f.normal().dot(i.normal()))) / 2);
 			});
 
 			change = Math.max(change, minChange);

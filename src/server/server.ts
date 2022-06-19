@@ -60,6 +60,7 @@ class App {
 						indices.push(f.halfedge!.next!.vert!.idx);
 						indices.push(f.halfedge!.next!.next!.vert!.idx);
 					});
+					
 					socket.emit('stream vertices', vertices);
 					socket.emit('stream indices', indices);
 				});

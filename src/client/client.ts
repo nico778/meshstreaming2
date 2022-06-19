@@ -148,7 +148,7 @@ var params = {
 	stream: () => startStreaming(),
 	simplify: () => startCollapsing(),
 	rebuild: () => startRebuilding(),
-	type: ['cube', 'icosahedron', 'gourd', 'monkey']
+	type: ['cube', 'icosahedron', 'gourd', 'spot', 'cheburashka', 'rocker-arm', 'suzanne']
 };
 
 gui
@@ -171,7 +171,10 @@ gui
 		'cube',
 		'icosahedron',
 		'gourd',
-		'monkey'
+		'spot',
+		'cheburashka',
+		'rocker-arm',
+		'suzanne'
 	])
 	.name('select model')
 	.listen();
