@@ -122,8 +122,7 @@ export class Vertex {
     });
 
 		if(max !== 2) {
-
-			change = 1
+			this.manifold = false;
 		}
 		
     return heLen * change;

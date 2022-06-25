@@ -291,11 +291,11 @@ export class PMesh {
     //console.log(this.edges.length);
   }
 
-	pm_simplify() {
+	pm_simplify() { 
 		let i = 0;
 		let nextVert: Vertex
 
-		while(this.current_nfaces >= 300) { 
+		while(this.current_nfaces >= 200) { 
 			nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -368,11 +368,9 @@ export class PMesh {
 		he!.twin!.face!.rm = true;
 		this.current_nfaces-=2;
 			
-		console.log(1000)
 		let updfaces = []
 		vt.faces(f => {
 			if(f.rm === false) {
-				//console.log('fupd')
 				updfaces.push(f.idx)
 				current_vsplit.update.push(f.idx);
 			}
@@ -416,8 +414,7 @@ export class PMesh {
 		he!.next!.twin = he!.next
 		he!.prev!.twin = he!.prev*/
 
-		//update remaining halfedges
-		//console.log(1001) 
+		//update remaining halfedges 
 		updfaces.forEach(f => {
 			if(this.faces[f].halfedge!.vert!.idx === vt.idx) {
 				this.faces[f].halfedge!.vert = vs;
@@ -440,25 +437,29 @@ export class PMesh {
 
 		this.current_nvertices--;
 
-		this.vsplits.push(current_vsplit); 
+		this.vsplits.push(current_vsplit);
+
+		//reset manifold property
+		vs.halfedges(h => {
+			h!.next!.vert.manifold = true;
+		})
 		
 		//ecol error update in affected area
-		/*vs.halfedges(h => {
-			//console.log('update')
+		vs.halfedges(h => {
 			h!.next!.vert.ecol_Error();
-		})*/
+		})
 	}
 
 	lowest_ecolError() {
 		let lowest: Vertex
 		this.verts.forEach(v => {
-			if(v.rm === false && v.ecolProspect && !lowest) {
+			if(!v.rm && v.manifold && v.ecolProspect && !lowest) {
 				lowest = v;
 			}
 		});
 
 		this.verts.forEach(v => {
-			if(v.rm === false && v.ecolProspect && v.ecolError < lowest.ecolError) {
+			if(!v.rm && v.manifold && v.ecolProspect && v.ecolError < lowest.ecolError) {
 				lowest = v;
 			}
 		});
