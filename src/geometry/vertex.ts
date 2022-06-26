@@ -21,7 +21,7 @@ export class Vertex {
 		this.manifold = true;
     this.position = position;
     this.idx = -1;
-    this.ecolError = 0;
+    this.ecolError = -1;
     //this.minError = -1;
     //this.totalError = -1;
     //this.errorCount = -1;

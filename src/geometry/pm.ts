@@ -295,7 +295,7 @@ export class PMesh {
 		let i = 0;
 		let nextVert: Vertex
 
-		while(this.current_nfaces >= 200) { 
+		while(this.current_nfaces >= 550) { 
 			nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
@@ -327,7 +327,7 @@ export class PMesh {
 	}
 
 	ecol(vt: Vertex, vs: Vertex, he: Halfedge) {
-		//console.log(vt.idx, vs.idx)
+		console.log(vt.idx, vs.idx)
 		//for vs halfedge repair
 		let vsh = he!.next!.twin!.next.idx;
 		//for face1vertex halfedge repair
@@ -345,13 +345,9 @@ export class PMesh {
 		current_vsplit.vt_position[2] = this.verts[vt.idx].position.z;
 
 		//get area on mesh for later update
-		
 		//vt.halfedges(h => {
-			//area.push(h!.next!.vert);
+			//area.push(h!.next!.vert); 
 		//});
-		
-		//delete the 2 collapsed faces on edge vtvs
-		
 		
 		current_vsplit.new_faces[0] = he!.face!.idx;
 		current_vsplit.new_faces[1] = he!.vert!.idx;
@@ -368,38 +364,15 @@ export class PMesh {
 		he!.twin!.face!.rm = true;
 		this.current_nfaces-=2;
 			
-		let updfaces = []
 		vt.faces(f => {
-			if(f.rm === false) {
-				updfaces.push(f.idx)
+			if(!f.rm) {
 				current_vsplit.update.push(f.idx);
 			}
 		});
-		/*
-		for(let h = he!.prev!.twin; h !== he || h!.face!.rm === true; h = h!.prev!.twin) {
-			updfaces.push(h!.face!.idx)
-			current_vsplit.update.push(h!.face!.idx);
-		}*/
-	
-		/*vt.faces(f => {
-			vs.faces(f2 => {
-				if(f.idx === f2.idx) {
-					f.halfedge.rm = true;
-					f.halfedge.next.rm = true;
-					f.halfedge.prev.rm = true;
-				}
-			});
-		});*/
+		console.log(1000)
+		this.vsplits.push(current_vsplit);
 
-		//update twins of first collapsed face
-		he!.prev!.twin!.twin = he!.next!.twin
-		he!.next!.twin!.twin = he!.prev!.twin
-
-		//update twins of second collapsed face
-		he!.twin!.next!.twin!.twin = he!.twin!.prev!.twin
-		he!.twin!.prev!.twin!.twin = he!.twin!.next!.twin
-
-
+		//mark halfedges of collapsed faces as removed
 		he.rm = true
 		he!.next!.rm = true
 		he!.prev!.rm = true
@@ -407,27 +380,24 @@ export class PMesh {
 		he!.twin!.next!.rm = true
 		he!.twin!.prev!.rm = true
 
-		/*he!.twin!.twin = he!.twin
-		he!.twin!.next!.twin = he!.twin!.next
-		he!.twin!.prev!.twin = he!.twin!.prev
-		he!.twin = he
-		he!.next!.twin = he!.next
-		he!.prev!.twin = he!.prev*/
-
 		//update remaining halfedges 
-		updfaces.forEach(f => {
-			if(this.faces[f].halfedge!.vert!.idx === vt.idx) {
-				this.faces[f].halfedge!.vert = vs;
-			} else if(this.faces[f].halfedge!.next!.vert!.idx === vt.idx) {
-				this.faces[f].halfedge!.next!.vert = vs;
-			} else if(this.faces[f].halfedge!.prev!.vert!.idx === vt.idx) {
-				this.faces[f].halfedge!.prev!.vert = vs;
+		vt.halfedges(h => {
+			if(!h.rm) {
+				h.vert = vs;
 			}
-		})
+		});
+		console.log(1001)
+		//update twins of first collapsed face
+		he!.prev!.twin!.twin = he!.next!.twin
+		he!.next!.twin!.twin = he!.prev!.twin
+
+		//update twins of second collapsed face
+		he!.twin!.next!.twin!.twin = he!.twin!.prev!.twin
+		he!.twin!.prev!.twin!.twin = he!.twin!.next!.twin
 		
 		//mark vt as removed
 		vt.rm = true;
-		
+		 
 		//update vs
 		vs.halfedge = this.halfedges[vsh];
 		//update f1v
@@ -437,33 +407,34 @@ export class PMesh {
 
 		this.current_nvertices--;
 
-		this.vsplits.push(current_vsplit);
-
 		//reset manifold property
-		vs.halfedges(h => {
-			h!.next!.vert.manifold = true;
-		})
-		
-		//ecol error update in affected area
-		vs.halfedges(h => {
-			h!.next!.vert.ecol_Error();
-		})
+		/*this.verts.forEach(v => {
+			if(!v.rm) {
+				v.manifold = true;
+			}
+		});
+
+		this.verts.forEach(v => {
+			if(!v.rm) {
+				v.ecol_Error();
+			}
+		});*/
 	}
 
 	lowest_ecolError() {
 		let lowest: Vertex
 		this.verts.forEach(v => {
-			if(!v.rm && v.manifold && v.ecolProspect && !lowest) {
+			if(!v.rm && v.manifold && v.ecolProspect && !v.ecolProspect.rm && !lowest) {
 				lowest = v;
 			}
-		});
+		}); 
 
 		this.verts.forEach(v => {
-			if(!v.rm && v.manifold && v.ecolProspect && v.ecolError < lowest.ecolError) {
+			if(!v.rm && v.manifold && v.ecolProspect && !v.ecolProspect.rm && v.ecolError < lowest.ecolError) {
 				lowest = v;
 			}
 		});
-		
+		 
 		return lowest;
 	}
 }
