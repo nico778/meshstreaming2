@@ -294,14 +294,14 @@ export class PMesh {
 	pm_simplify() { 
 		let i = 0;
 		let nextVert: Vertex
-
+ 
 		while(this.current_nfaces >= 550) { 
 			nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
 				break;
 			}
-
+ 
 			this.ecol(nextVert, nextVert.ecolProspect, nextVert.ecolHalfedge);
 			i++;
 		}
@@ -337,18 +337,15 @@ export class PMesh {
 		let f2vh = he!.twin!.prev!.twin!.next.idx;
 		let f2vidx = he!.twin!.prev!.twin!.next!.vert!.idx;
 
+		//vsplit vertex data
 		let current_vsplit = new Vsplit;
 		current_vsplit.vs_index = vs.idx;
 		current_vsplit.vt_index = vt.idx;																																										
 		current_vsplit.vt_position[0] = this.verts[vt.idx].position.x;
 		current_vsplit.vt_position[1] = this.verts[vt.idx].position.y;
 		current_vsplit.vt_position[2] = this.verts[vt.idx].position.z;
-
-		//get area on mesh for later update
-		//vt.halfedges(h => {
-			//area.push(h!.next!.vert); 
-		//});
 		
+		//vsplit face data
 		current_vsplit.new_faces[0] = he!.face!.idx;
 		current_vsplit.new_faces[1] = he!.vert!.idx;
 		current_vsplit.new_faces[2] = he!.next!.vert!.idx;
@@ -359,7 +356,7 @@ export class PMesh {
 		current_vsplit.new_faces[6] = he!.twin!.next!.vert!.idx;
 		current_vsplit.new_faces[7] = he!.twin!.prev!.vert!.idx;
 		
-		//mark face as removed
+		//mark collapsed faces as removed
 		he!.face!.rm = true;
 		he!.twin!.face!.rm = true;
 		this.current_nfaces-=2;
@@ -369,7 +366,7 @@ export class PMesh {
 				current_vsplit.update.push(f.idx);
 			}
 		});
-		console.log(1000)
+		//console.log(1000)
 		this.vsplits.push(current_vsplit);
 
 		//mark halfedges of collapsed faces as removed
@@ -384,9 +381,9 @@ export class PMesh {
 		vt.halfedges(h => {
 			if(!h.rm) {
 				h.vert = vs;
-			}
+			} 
 		});
-		console.log(1001)
+		//console.log(1001)
 		//update twins of first collapsed face
 		he!.prev!.twin!.twin = he!.next!.twin
 		he!.next!.twin!.twin = he!.prev!.twin
@@ -408,7 +405,7 @@ export class PMesh {
 		this.current_nvertices--;
 
 		//reset manifold property
-		/*this.verts.forEach(v => {
+		this.verts.forEach(v => {
 			if(!v.rm) {
 				v.manifold = true;
 			}
@@ -418,8 +415,8 @@ export class PMesh {
 			if(!v.rm) {
 				v.ecol_Error();
 			}
-		});*/
-	}
+		});
+	} 
 
 	lowest_ecolError() {
 		let lowest: Vertex
@@ -429,11 +426,13 @@ export class PMesh {
 			}
 		}); 
 
-		this.verts.forEach(v => {
-			if(!v.rm && v.manifold && v.ecolProspect && !v.ecolProspect.rm && v.ecolError < lowest.ecolError) {
-				lowest = v;
-			}
-		});
+		if(lowest) {
+			this.verts.forEach(v => {
+				if(!v.rm && v.manifold && v.ecolProspect && !v.ecolProspect.rm && v.ecolError < lowest.ecolError) {
+					lowest = v;
+				}
+			});
+		}
 		 
 		return lowest;
 	}

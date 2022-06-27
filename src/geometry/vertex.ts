@@ -98,9 +98,9 @@ export class Vertex {
 		incidentFaces.push(h!.twin!.face);
 		
 		let max = 0; 
-		this.halfedges(h => {
-			this.halfedge!.next!.vert.halfedges(h2 => {
-				if(h.next!.vert!.idx === h2.next!.vert!.idx) {
+		this.halfedges(he => {
+			h.next!.vert.halfedges(he2 => {
+				if(he.next!.vert!.idx === he2.next!.vert!.idx) {
 					max++;
 				}
 			})
