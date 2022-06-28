@@ -295,12 +295,12 @@ export class PMesh {
 		let i = 0;
 		let nextVert: Vertex
  
-		while(this.current_nfaces >= 550) { 
+		while(this.current_nfaces >= 500) { 
 			nextVert = this.lowest_ecolError();
 			if(!nextVert) {
 				console.log('no next vertex found');
 				break;
-			}
+			} 
  
 			this.ecol(nextVert, nextVert.ecolProspect, nextVert.ecolHalfedge);
 			i++;
@@ -377,13 +377,14 @@ export class PMesh {
 		he!.twin!.next!.rm = true
 		he!.twin!.prev!.rm = true
 
-		//update remaining halfedges 
+		//update remaining halfedges
+		let updates = [] 
 		vt.halfedges(h => {
 			if(!h.rm) {
-				h.vert = vs;
+				updates.push(h.idx)
 			} 
 		});
-		//console.log(1001)
+		
 		//update twins of first collapsed face
 		he!.prev!.twin!.twin = he!.next!.twin
 		he!.next!.twin!.twin = he!.prev!.twin
@@ -396,7 +397,7 @@ export class PMesh {
 		vt.rm = true;
 		 
 		//update vs
-		vs.halfedge = this.halfedges[vsh];
+		this.verts[vs.idx].halfedge = this.halfedges[vsh];
 		//update f1v
 		this.verts[f1vidx].halfedge = this.halfedges[f1vh];
 		//update f2v
@@ -404,18 +405,19 @@ export class PMesh {
 
 		this.current_nvertices--;
 
-		//reset manifold property
-		this.verts.forEach(v => {
-			if(!v.rm) {
-				v.manifold = true;
-			}
-		});
+		updates.forEach(u => {
+			this.halfedges[u].vert = vs;
+		})
 
-		this.verts.forEach(v => {
-			if(!v.rm) {
-				v.ecol_Error();
-			}
-		});
+		vs.manifold = true;
+		vs.halfedges(h => {
+			h.next.vert.manifold = true;
+		})
+		vs.ecol_Error()
+		vs.halfedges(h => {
+			h.next.vert.ecol_Error()
+		})
+		//console.log(1003)
 	} 
 
 	lowest_ecolError() {

@@ -108,7 +108,7 @@ export class Vertex {
     
     this.faces(f => { 
 
-			if(f.idx !== incidentFaces[0].idx || f.idx !== incidentFaces[1].idx) {
+			if(f.idx !== incidentFaces[0].idx && f.idx !== incidentFaces[1].idx) {
 
 				let minChange = 1;
 
@@ -124,7 +124,7 @@ export class Vertex {
 		if(max !== 2) {
 			this.manifold = false;
 		}
-		
+
     return heLen * change;
   }
 }
